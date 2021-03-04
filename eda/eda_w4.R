@@ -8,9 +8,9 @@ require(MASS)
 air <- read.csv("airquality.csv")
 air_neat <- air[which(is.na(air)), ]
 # 1b
-air_median_by_month <- 
-  air_neat %>% 
-  group_by(Month) %>% 
+air_median_by_month <-
+  air_neat %>%
+  group_by(Month) %>%
   summarize(Ozone_median = median(Ozone),
             Solar.R_median = median(Solar.R),
             Wind_median = median(Wind),
