@@ -5,8 +5,9 @@ require(ggplot2)
 require(MASS)
 
 # 1a
-air <- read.csv("airquality.csv")
-air_neat <- air[which(is.na(air)), ]
+air <- read.csv("eda/airquality.csv")
+air_neat <- na.omit(air)
+
 # 1b
 air_median_by_month <-
   air_neat %>%
@@ -15,21 +16,23 @@ air_median_by_month <-
             Solar.R_median = median(Solar.R),
             Wind_median = median(Wind),
             Temp_median = median(Temp))
+
 # 1c
 ggplot(air_median_by_month, aes(x = Month, y = Ozone_median)) +
-  geom_bar(aes(color = Ozone_median)) +
+  geom_bar(aes(fill = Ozone_median), stat = "identity") +
   xlab("Time (month)") +
   ylab("Median Level of Ozone") +
   ggtitle("Median Level of Ozone") +
-  theme_minimal()
+  theme_gray()
+
 # 1d
 ggplot(air_neat, aes(x = Month, y = Temp)) +
-  geom_point(aes(color = Temp)) +
-  geom_smooth(method = "lm") +
+  geom_jitter(width = 0.5, aes(color = Temp)) +
+  geom_smooth(method = "auto") +
   xlab("Time (month)") +
   ylab("Temperature") +
   ggtitle("Temp vs Time") +
-  theme_minimal()
+  theme_gray()
 
 # 2b & 2c
 ggplot(Cars93, aes(x = Horsepower, y = MPG.city)) +
