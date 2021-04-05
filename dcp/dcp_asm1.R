@@ -54,7 +54,7 @@ for (i in seq(num_of_file)) {
     # Take the second and third marker which determine the actual data.
     data <- data[2:3]
 
-    # Put the marker vecters into workspace with corresponding names.
+    # Put the marker vectors into workspace with corresponding names.
     assign(paste("marker_test",
                  as.character(test_num),
                  "_act",
@@ -74,7 +74,7 @@ for (i in seq(num_of_file)) {
                       as.character(act_num),
                       sep = ""))
 
-    # Load marker vecters for this loop.
+    # Load marker vectors for this loop.
     var_name <- as.character(data[get(paste("marker_test",
                           as.character(test_num),
                           "_act",
@@ -122,7 +122,7 @@ for (i in seq(num_of_file)) {
                     as.character(act_num),
                     sep = ""))
 
-    # Load marker vecter for this loop
+    # Load marker vector for this loop
     range <- get(paste("marker_test",
                     as.character(test_num),
                     "_act",
@@ -202,7 +202,10 @@ for (i in seq(num_of_file)) {
 
     # Compute the mean for each column in rest period and
     # subtract the mean value for each column
-    data[, 2:4] <- data[, 2:4] - colMeans(data[1:rest_marker, 2:4], na.rm = F)
+    offset <- colMeans(data[1:rest_marker, 2:4])
+    data[, 2] <- data[, 2] - offset[1]
+    data[, 3] <- data[, 3] - offset[2]
+    data[, 4] <- data[, 4] - offset[3]
 
     assign(paste("obj_test",
                 as.character(test_num),
@@ -250,8 +253,9 @@ for (i in seq(num_of_file)) {
             ylim = c(-40000, 40000))
         lines(seq(dim(dataset)[1]), dataset[, 3], col = "yellow")
         lines(seq(dim(dataset)[1]), dataset[, 4], col = "blue")
+        grid(col = "lightgray")
         legend("topleft",
-                legend = c("gX", "gY", "gZ"),
+                legend = c("X", "Y", "Z"),
                 col = c("red", "yellow", "blue"),
                 lty = 1)
         abline(v = marker_label[1:3], lty = 2)
@@ -378,11 +382,12 @@ plot_box <- function(data, flag) {
     boxplot(value ~ axis + activity, data,
         main = paste("Distribution of", flag, "Values"),
         xlab = paste(flag, " Values"),
-        ylab = "Rotational velocity",
+        ylab = "Rotational velocity (deg/sec)",
         names = c("", "Act1", "", "", "Act2", "",
                   "", "Act3", "", "", "Act4", ""),
         col = c("red", "yellow", "blue"),
         at = c(1:3, 5:7, 9:11, 13:15))
+        grid(col = "lightgray")
     legend("topleft",
             legend = c("X", "Y", "Z"),
             fill = c("red", "yellow", "blue"),
