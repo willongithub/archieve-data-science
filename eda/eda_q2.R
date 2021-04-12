@@ -1,4 +1,5 @@
-### EDA Online Quiz 2
+### EDA Online Quiz 2 Part I
+# u3229442 Siqi Wu
 
 require(caret)
 require(ggplot2)
@@ -236,20 +237,40 @@ ggplot(aes(x = manufacturer, y = cty, fill = manufacturer)) +
     ggtitle("MPG (city) vs Manufacturer") +
     xlab("manufacturer") +
     ylab("mpg (city)") +
-    theme_gray()
+    theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+          axis.title = element_text(size = 12, hjust = 0.5),
+          axis.text.x = element_text(vjust = 0.5, angle = 45))
 
-#
-#
-#
+# From the boxplots, we can clearly see that the mean mpg and spread
+# of the mpg distribution among different manufacturers are quite
+# different. There are outliers from Volkswagen, Mercury, Honda and
+# Chevolet. The reason here is different brands consist of different
+# product line which means different type of car and different
+# configration of engine. These boxplots could not deliver these extra
+# information.
 
 # 12
 mpg %>%
-ggplot(aes(x = manufacturer, y = cty, fill = manufacturer)) +
+ggplot(aes(x = manufacturer, y = cty)) +
     geom_boxplot() +
-    geom_jitter(width = 0.1,
-                size = 3,
-                aes(colour = class)) +
+    geom_jitter(aes(colour = class),
+                size = mpg$displ,
+                width = 0.1) +
     ggtitle("MPG (city) vs Manufacturer") +
     xlab("manufacturer") +
     ylab("mpg (city)") +
-    theme_gray()
+    scale_colour_manual(name = "Type of Car",
+                        values = c("red", "orange", "yellow",
+                                   "green", "cyan", "blue",
+                                   "purple"))
+    theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+          axis.title = element_text(size = 12, hjust = 0.5),
+          axis.text.x = element_text(vjust = 0.5, angle = 45))
+
+# An extra layer of jitter points have been added. Now we are able to
+# identify the product combination of each brand which significantly
+# affect the location and variation of the boxplots. The colour of the
+# dots represent the class of the car while the size of the dots represent
+# the engine displacement. We can see the brands with more SUV and pickup
+# truck as well as larger engine size average low mpg. And brands with
+# wider product line like Nissan and Toyota show wider spread of the box.
