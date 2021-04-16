@@ -15,6 +15,8 @@ require(Tmisc)
 iris4 <- iris %>% select(1:4)
 
 # b
+boxplot(iris4)
+
 iris4 %>%
     melt() %>%
     ggplot(aes(x = variable, y = value)) +

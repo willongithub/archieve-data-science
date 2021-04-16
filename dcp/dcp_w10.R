@@ -46,9 +46,11 @@ sixth_j <- anti_join(superheroes, publishers)
 
 ## Exercise 4
 ## relationship between the age of plane and its departure delay
+
 require(nycflights13)
 require(dplyr)
 require(ggplot2)
+
 # 1
 year_of_data <- 2013
 
@@ -79,3 +81,31 @@ result %>%
 
 ## coordinates of the origin and destination airport
 # 1
+# origin, dest, faa
+
+# 2
+airports_lite <- airports %>% select(faa, lat, lon)
+
+# 3
+result <- flights %>%
+    inner_join(airports_lite, by = c("origin" = "faa")) %>%
+    inner_join(airports_lite, by = c("dest" = "faa"))
+
+# 4
+result <- flights %>%
+    inner_join(airports_lite,
+               by = c("origin" = "faa")) %>%
+    inner_join(airports_lite,
+               by = c("dest" = "faa"),
+               suffix = c(".origin", ".dest"))
+
+# extra
+result <- flights %>%
+    left_join(airports_lite,
+               by = c("origin" = "faa")) %>%
+    left_join(airports_lite,
+               by = c("dest" = "faa"),
+               suffix = c(".origin", ".dest"))
+
+View(unique(result[is.na(result$lat.dest), "dest"]))
+View(unique(result[is.na(result$lat.origin), "origin"]))
