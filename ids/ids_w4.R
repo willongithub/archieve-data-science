@@ -28,7 +28,10 @@ tiny_titles <- c()
 tiny_directors <- c()
 tiny_years <- c()
 tiny_countries <- c()
-tiny_movies <- data.frame(tiny_titles, tiny_directors, tiny_years, tiny_countries)
+tiny_movies <- data.frame(tiny_titles,
+                          tiny_directors,
+                          tiny_years,
+                          tiny_countries)
 new_movies <- list()
 rbind(tiny_movies, new_movies)
 tiny_movies$tiny_titles

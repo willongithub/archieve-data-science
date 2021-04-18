@@ -1,0 +1,25 @@
+---
+title: "Introduction to Data Science 11516 G"
+subtitle: "Assignment 1 - Data Wrangling and Exploration"
+author: "Siqi Wu (u3229442)"
+date: "17/04/2021"
+output: pdf_document
+---
+
+##################### Part D #####################
+
+## Q1
+Based on the meteorological data provided, what could be the best time of the
+year for the power output of wind farms?
+
+## Q2
+Based on the meteorological data provided, what suggestions can you provide for
+the configuration (direction) of the wind turbines?
+
+## Q3
+Based on the meteorological data provided, what could be inferred for the
+performance of solar panels throughout the year?
+
+## Q4
+Based on the meteorological data provided, could you find any relation between
+wind direction and wind speed?
