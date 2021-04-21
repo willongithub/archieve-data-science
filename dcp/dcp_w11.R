@@ -49,22 +49,28 @@ h2 %>%
     grep(pattern = "Coronavirus", ignore.case = T, value = T)
 
 # 8
-p <- html_elements(content_page, "p")
+p <- html_elements(content_page, c("p"))
 
 # 9
-p %>%
+content_page %>%
+    html_elements("body > div > div:nth-child(4) > div > div:nth-child(7)") %>%
+    html_elements("p") %>%
     html_text() %>%
-    grep(pattern = "Coronavirus", ignore.case = T, value = T)
+    .[3]
 
 # 10
+
 
 # 11
 table <- html_elements(content_page, "table")
 
 # 12
-table %>% html_text()
+table <- table %>% html_text()
 
 # 13
-table %>% html_text() %>% gsub(pattern = "\n", replacement = "")
+table <- table %>%
+    strsplit("\n *") %>%
+    .[[1]]
 
 # 14
+table <- matrix(table, ncol = 2, nrow = 12)
