@@ -11,6 +11,7 @@
 
 # loading required libraries
 library(rvest)
+library(tidyverse)
 
 #' ##################### Part 1 #####################
 ## 1
@@ -31,7 +32,7 @@ table_legends <- raw_page %>%
     as.list()
 
 ## 3
-edg_list <- raw_page %>%
+data_list <- raw_page %>%
     html_elements(".wikitable") %>%
     .[1] %>%
     html_table()
@@ -49,11 +50,11 @@ new_page <- links %>%
     url_absolute(., "https://en.wikipedia.org")
 
 ## 6
-crtr_list <- vector("list", len = 2)
-names(crtr_list) <- c("Cultural", "Natural")
+criteria_list <- vector("list", len = 2)
+names(criteria_list) <- c("Cultural", "Natural")
 
 for (i in 1:2) {
-    crtr_list[[i]] <- new_page %>%
+    criteria_list[[i]] <- new_page %>%
         read_html() %>%
         html_elements("ol") %>%
         .[i] %>%
@@ -66,10 +67,111 @@ for (i in 1:2) {
 
 #' ##################### Part 2 #####################
 ## 1
-edg_list <- edg_list[[1]][, !names(edg_list[[1]]) %in% c("Image", "Refs")]
+data_list <- data_list[[1]][, !names(data_list[[1]]) %in% c("Image", "Refs")]
 
 ## 2
-country_list <- edg_list$Location %>%
-    grep(pattern = ", .*")
+re_country <- regex("((?<=,\\s{0,2})[A-Z][^,]*[a-z](?=([,]?[*]?\\s?\\d)))
+            # match country names with specific site locations
+            |(^[A-Z][^,A-Z]*[a-z](?=(\\[.{0,2}\\s?.?])?\\s?\\d))
+            # match country names without site locations
+            |((?<=,\\s)[:alpha:]+(?=[.]))
+            # match first Egypt
+            |((?<=[:alpha:]{3}\\s)[:alpha:]+(?=\\d))
+            # match Kenya
+            |((?<=Jer)[:print:]+(?=\\[.{4}]))
+            # match Jerusalem
+            ", comments = T)
+
+data_list["Location"] <- data_list$Location %>%
+    str_extract(pattern = re_country) %>%
+    gsub(pattern = "[*]", replacement = " &") %>%
+    as.data.frame()
+
+## 3
+re_types <- regex("^[:alpha:]+(?=:)")
+re_criterias <- regex("(?<=:).*")
+
+data_list["Type"] <- data_list$Criteria %>%
+    str_extract(pattern = re_types) %>%
+    as.data.frame()
+
+data_list["Criteria"] <- data_list$Criteria %>%
+    gsub(pattern = "\\n", replacement = "") %>%
+    str_extract(pattern = re_criterias) %>%
+    gsub(pattern = ", ", replacement = "") %>%
+    as.data.frame()
+
+## 4
+names(data_list)[4] <- table_legends[[4]][1]
+
+re_acres <- regex("(?<=[(]).*(?=[)])")
+
+data_list["Area"] <- data_list$Area %>%
+    str_extract(pattern = re_acres) %>%
+    as.data.frame()
+
+## 5
+re_endangered <- regex("[:digit:]{4}.$")
+
+data_list["Endangered"] <- data_list$Endangered %>%
+    str_extract(pattern = re_endangered) %>%
+    gsub(pattern = ".$", replacement = "") %>%
+    as.numeric() %>%
+    as.data.frame()
+
+## 6
+str(data_list)
 
 #' ##################### Part 3 #####################
+## 1
+length(which(data_list$Type == "Cultural"))
+length(which(data_list$Type == "Natural"))
+
+## 2
+data_list$Area %>%
+    gsub(pattern = ",", replacement = "") %>%
+    as.numeric() %>%
+    which.max() %>%
+    data_list$Name[.]
+
+data_list$Area %>%
+    gsub(pattern = ",", replacement = "") %>%
+    as.numeric() %>%
+    which.min() %>%
+    data_list$Name[.]
+
+## 3
+plot <- hist(data_list[["Endangered"]],
+     main = "Year of the sites appeared on the List",
+     xlab = "year",
+     ylab = "frequency",
+     ylim = range(0, 20),
+     col = "sienna2")
+    
+text(plot$mids,
+     plot$counts,
+     labels = plot$counts,
+     adj = c(0.5, - 0.5))
+
+## 4
+data_list %>%
+    group_by(Location) %>%
+    summarize(site_count = n()) %>%
+    arrange(desc(site_count))
+
+## 5
+data_list <- data_list %>%
+    mutate(years_before_listed = .[["Endangered"]] - .[["Year (WHS)"]])
+
+## 6
+plot <- hist(data_list[["years_before_listed"]],
+     main = "Years before the sites appeared on the endangered List",
+     xlab = "year",
+     ylab = "frequency",
+     ylim = range(0, 20),
+     col = "sienna2")
+    
+text(plot$mids,
+     plot$counts,
+     labels = plot$counts,
+     adj = c(0.5, - 0.5))
