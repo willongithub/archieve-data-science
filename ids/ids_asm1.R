@@ -1,7 +1,7 @@
 #' ---
 #' title: "Introduction to Data Science 11516 G"
 #' subtitle: "Assignment 1 - Data Wrangling and Exploration"
-#' author: "Siqi Wu (u3229442)"
+#' author: ""
 #' date: "17/04/2021"
 #' output:
 #'   pdf_document:

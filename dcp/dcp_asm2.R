@@ -1,7 +1,7 @@
 #' ---
 #' title: "Data Capture and Preparations G (11520)"
 #' subtitle: "Assignment 2"
-#' author: "Siqi Wu (u3229442)"
+#' author: ""
 #' date: ""
 #' output:
 #'   pdf_document:
