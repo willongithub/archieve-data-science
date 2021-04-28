@@ -1,5 +1,5 @@
 /archieve
 *.Rhistory
 .DS_Store
-/dcp/data
+/*/data
 *.csv

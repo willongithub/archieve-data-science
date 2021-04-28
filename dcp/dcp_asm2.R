@@ -23,31 +23,55 @@ raw_page <- read_html(url)
 
 ## 2
 table_legends <- raw_page %>%
+    # load all the descreption list elements from raw html
     html_elements("dl") %>%
+
+    # second item it our target
     .[2] %>%
+
+    # load each descreption
     html_elements("dd") %>%
+
+    # retrive text
     html_text2() %>%
-    gsub(pattern = "\\[.*]$", replacement = "") %>%
-    strsplit(": ") %>%
+
+    # get rid of the reference notation at the end
+    str_replace_all(pattern = "\\[.*]$", replacement = "") %>%
+
+    # split titles and descriptions and store in a list
+    str_split(": ") %>%
     as.list()
 
 ## 3
 data_list <- raw_page %>%
+    # load all the tables from raw html
     html_elements(".wikitable") %>%
+
+    # the first table is endangered list required
     .[1] %>%
+
+    # read it as table
     html_table()
 
 ## 4
 links <- raw_page %>%
+    # load all the links in the page
     html_elements("a")
 
 ## 5
 new_page <- links %>%
-    grep(pattern = "Criteria", ignore.case = T) %>%
+    # find the link with regard to Criteria
+    str_which(pattern = "Criteria") %>%
+
+    # there are two identical links, get the fisrt
     .[1] %>%
     links[.] %>%
+    # retrive the url
     html_attr("href") %>%
-    url_absolute(., "https://en.wikipedia.org")
+
+    # convert the relative path to absolute path
+    # (same as simple paste in this case)
+    url_absolute("https://en.wikipedia.org")
 
 ## 6
 criteria_list <- vector("list", len = 2)
@@ -60,31 +84,38 @@ for (i in 1:2) {
         .[i] %>%
         html_elements("li") %>%
         html_text2() %>%
-        gsub(pattern = "\\[.*]$", replacement = "") %>%
-        gsub(pattern = "\"", replacement = "") %>%
-        as.list()
+        str_replace_all(pattern = "\\[.*]$", replacement = "") %>%
+        str_replace_all(pattern = "\"", replacement = "") %>%
+        as.data.frame()
 }
 
 #' ##################### Part 2 #####################
 ## 1
+# drop the two undesired column
 data_list <- data_list[[1]][, !names(data_list[[1]]) %in% c("Image", "Refs")]
 
 ## 2
-re_country <- regex("((?<=,\\s{0,2})[A-Z][^,]*[a-z](?=([,]?[*]?\\s?\\d)))
+# generate regex for different scenarios
+re_country <- regex("
             # match country names with specific site locations
-            |(^[A-Z][^,A-Z]*[a-z](?=(\\[.{0,2}\\s?.?])?\\s?\\d))
-            # match country names without site locations
-            |((?<=,\\s)[:alpha:]+(?=[.]))
-            # match first Egypt
-            |((?<=[:alpha:]{3}\\s)[:alpha:]+(?=\\d))
-            # match Kenya
-            |((?<=Jer)[:print:]+(?=\\[.{4}]))
+            ((?<=,\\s{0,2})[A-Z][^,]*[a-z](?=([,*]?\\s?\\d)|[.]))
+
+            # match country names without specific site locations
+            # |([A-Z][^,]*[a-z\\)](?=(\\[.{0,2}\\s?.?])?\\s?\\d))
+
+            |([A-Z][^,]*[a-z\\)](?=(\\[.{4}])?\\s?\\d))
+
+            # |((?<=Jer)[:print:]+(?=\\[.{4}]))
             # match Jerusalem
             ", comments = T)
 
-data_list["Location"] <- data_list$Location %>%
+str_view(a, "(\\[.{4}])?\\s?\\d")
+
+data_list["Location"]
+
+data_list$Location %>%
     str_extract(pattern = re_country) %>%
-    gsub(pattern = "[*]", replacement = " &") %>%
+    str_replace(pattern = "[*]", replacement = " &") %>%
     as.data.frame()
 
 ## 3
@@ -96,9 +127,9 @@ data_list["Type"] <- data_list$Criteria %>%
     as.data.frame()
 
 data_list["Criteria"] <- data_list$Criteria %>%
-    gsub(pattern = "\\n", replacement = "") %>%
+    str_replace_all(pattern = "\\n", replacement = "") %>%
     str_extract(pattern = re_criterias) %>%
-    gsub(pattern = ", ", replacement = "") %>%
+    str_replace_all(pattern = ", ", replacement = "") %>%
     as.data.frame()
 
 ## 4
@@ -115,12 +146,12 @@ re_endangered <- regex("[:digit:]{4}.$")
 
 data_list["Endangered"] <- data_list$Endangered %>%
     str_extract(pattern = re_endangered) %>%
-    gsub(pattern = ".$", replacement = "") %>%
+    str_replace_all(pattern = ".$", replacement = "") %>%
     as.numeric() %>%
     as.data.frame()
 
 ## 6
-str(data_list)
+glimpse(data_list)
 
 #' ##################### Part 3 #####################
 ## 1
@@ -129,13 +160,13 @@ length(which(data_list$Type == "Natural"))
 
 ## 2
 data_list$Area %>%
-    gsub(pattern = ",", replacement = "") %>%
+    str_replace_all(pattern = ",", replacement = "") %>%
     as.numeric() %>%
     which.max() %>%
     data_list$Name[.]
 
 data_list$Area %>%
-    gsub(pattern = ",", replacement = "") %>%
+    str_replace_all(pattern = ",", replacement = "") %>%
     as.numeric() %>%
     which.min() %>%
     data_list$Name[.]
