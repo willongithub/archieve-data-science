@@ -9,7 +9,40 @@
 #'     df_print: kable
 #' ---
 
-# loading required libraries
-library()
+#' ##################### Part 0 #####################
+#' Title and abstract
 
 #' ##################### Part 1 #####################
+#' Problem identification
+
+
+
+#' ##################### Part 2 #####################
+#' Data preprocessing
+
+# loading required libraries
+library(tidyverse)
+
+trainer <- read_csv("eda/data/train.csv")
+tester <- read_csv("eda/data/test.csv")
+
+colSums(is.na(trainer)) / nrow(trainer)
+colSums(is.na(tester)) / nrow(tester)
+
+#' ##################### Part 3 #####################
+#' EDA
+
+#' ##################### Part 4 #####################
+#' Further preprocessing
+
+#' ##################### Part 5 #####################
+#' Modelling
+
+#' ##################### Part 6 #####################
+#' Evaluation
+
+#' ##################### Part 7 #####################
+#' Recommendations and final conclutions
+
+#' ##################### Part 8 #####################
+#' References

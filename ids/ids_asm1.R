@@ -20,7 +20,7 @@ if (!("tidyverse" %in% rownames(installed.packages()))) {
 require(tidyverse)
 
 # suppress warning message for clean report
-options(warn = - 1)  
+options(warn = - 1)
 
 ## 1
 # setup path to the 19 CSV files
