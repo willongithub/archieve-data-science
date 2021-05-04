@@ -1,0 +1,16 @@
+---
+title: "Exploratory Data Analysis and Visualisation G (11517)"
+subtitle: "Final Project"
+author: "Siqi WU (u3229442)"
+date: "Semester 1 2021"
+output:
+  pdf_document:
+    highlight: breezedark
+    df_print: kable
+---
+
+```{r include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+
