@@ -25,6 +25,7 @@ In this dataset, there are
 # loading required libraries
 require(tidyverse)
 require(ggplot2)
+require(GGally)
 
 trainer <- read_csv("eda/data/train.csv")
 tester <- read_csv("eda/data/test.csv")
@@ -85,6 +86,18 @@ trainer %>%
         geom_density(colour = "darkred") +
         facet_wrap(~ key, scales = "free")
 
+match_var_1 <- c("1stFlrSF", "GrLivArea", "TotalBsmtSF")
+match_var_2 <- c("OverallQual", "OverallCond", "YearBuilt", "YearRemodAdd")
+
+trainer %>%
+    select_if(is.numeric) %>%
+    ggcorr()
+
+trainer %>%
+    select_if(is.numeric) %>%
+    cor() %>%
+    order(decreasing=TRUE)[1:10]
+
 trainer %>%
     select(where(is.character), SalePrice) %>%
     select(names(which(colSums(is.na(.)) == 0))) %>%
@@ -99,28 +112,32 @@ trainer %>%
     gather("column", "value", -SalePrice) %>%
     group_by(column, value) %>%
     summarize(mean_price = mean(SalePrice)) %>%
+    ungroup() %>%
     group_by(column) %>%
-    summarize(cat_var = var(mean_price)) %>%
+    summarize(cat_var = sd(mean_price)) %>%
     ungroup() %>%
     ggplot(aes(reorder(column, -cat_var), cat_var, fill = cat_var)) +
         geom_col(show.legend = F) +
         scale_fill_viridis_c() +
         theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 
-trainer %>%
-    select(where(is.character), SalePrice) %>%
-    aov(SalePrice ~ as.factor(Neighborhood), data = .) %>%
-    summary()
+cat_group_1 <- c("Heighborhood")
+cat_group_2 <- c("ExterQual")
 
 #' ##################### Part 4 #####################
 #' Further preprocessing
 train_model <- trainer %>%
-    select() %>%
+    select()
 
 #' ##################### Part 5 #####################
 #' Modelling
+# Model 1, using variables , , , and categorizes them into groups by
+# Heighborhoods of 3 levels.
 train_model %>%
     lm(SalePrice ~ ., .)
+
+# Model 2, using OverallQual, OverallCond, YearBuilt, YearRemodAdd, and
+# categorizes them into groups by ExterQual
 
 
 #' ##################### Part 6 #####################
