@@ -13,6 +13,8 @@
 
 require(tidyverse)
 require(ggplot2)
+require(GGally)
+library(caret)
 
 #' ## Task 1: Data Preparation and Wrangling
 
@@ -45,25 +47,10 @@ recovered[["Date"]] <- recovered[["Date"]] %>%
     as.Date(format = "%Y-%m-%d")
 
 #' ### 5
-covid19 <- covid19 %>%
+covid19 <- tests %>%
+    merge(covid19, all = T) %>%
     merge(recovered, all = T) %>%
-    merge(tests, all = T) %>%
-    merge(countries, all = T)
-
-a <- countries %>%
-    merge(tests, all = T)
-
-colSums(is.na(a))
-length(unique(covid19$Country))
-covid19 %>%
-    filter(is.na(Code))
-
-x <- data.frame(k1 = c(NA,NA,3,4,5), k2 = c(1,NA,NA,4,5), a = 1:5)
-y <- data.frame(k1 = c(NA,2,NA,4,5), k2 = c(NA,NA,3,4,5), b = 1:5)
-merge(x, y, by = c("k1","k2")) # NA's match
-merge(x, y, by = "k1") # NA's match, so 6 rows
-merge(x, y, by = "k2", incomparables = NA) # 2 rows
-
+    merge(countries, by = c("Code", "Country"), all = T)
 
 #' ### 6
 colSums(is.na(covid19))
@@ -82,64 +69,212 @@ covid19 <- covid19 %>%
     mutate(Month = as.numeric(format(Date, "%m")))
 
 #' ## Task 2: Exploratory Data Analysis
-View(head(covid19))
+
 #' ### 1
 covid19 <- covid19 %>%
     arrange(Date, Country) %>%
     group_by(Country) %>%
-    mutate(CumCases = colSums(NewCases))
+    mutate(CumCases = cumsum(NewCases),
+           CumDeaths = cumsum(NewDeaths),
+           CumRecovered = cumsum(Recovered),
+           CumTests = cumsum(NewTests)) %>%
+    ungroup()
 
 #' ### 2
-
+covid19 <- covid19 %>%
+    mutate(Active = CumCases - (CumDeaths + CumRecovered),
+           FatalityRate = CumDeaths / CumCases)
 
 #' ### 3
-
+covid19 <- covid19 %>%
+    mutate(Cases_1M_Pop =  CumCases * (10^6) / Population,
+           Deaths_1M_Pop = CumDeaths * (10^6) / Population,
+           Recovered_1M_Pop = CumRecovered * (10^6) / Population,
+           Tests_1M_Pop = CumTests * (10^6) / Population)
 
 #' ### 4
-
+covid19 %>%
+    group_by(Date) %>%
+    summarize(DeathToll = sum(NewDeaths)) %>%
+    filter(DeathToll == max(DeathToll))
 
 #' ### 5
-
+covid19 %>%
+    group_by(Date) %>%
+    summarize(Case = sum(NewCases),
+              Death = sum(NewDeaths),
+              Recovered = sum(Recovered),
+              Test = sum(NewTests)) %>%
+    gather("Column", "Count", "Case":"Test") %>%
+    ggplot(aes(Date, log(Count), group = Column, col = Column)) +
+        geom_line() +
+        ggtitle("COVID-19 Cases (2020)") +
+        xlab("Date") +
+        ylab("Count (log)") +
+        scale_colour_viridis_d(name = "") +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
 #' ### 6
-
+lastDay_data <- covid19 %>% filter(Date == "2020-05-05")
 
 #' ### 7
+# extract whole records of the top 10 countries with highest active cases
+top10active <- lastDay_data %>%
+    arrange(desc(Active)) %>%
+    head(10) %>%
+    select(Country)
 
+top10activeW <- covid19 %>%
+    filter(Country %in% top10active$Country)
+
+# extract whole records of the top 10 countries with highest confirmed cases
+top10case <- lastDay_data %>%
+    arrange(desc(CumCases)) %>%
+    head(10) %>%
+    select(Country)
+
+top10caseW <- covid19 %>%
+    filter(Country %in% top10case$Country)
+
+# extract whole records of the top 10 countries with highest fatality rate
+top10fatality <- lastDay_data %>%
+    arrange(desc(FatalityRate)) %>%
+    head(10) %>%
+    select(Country)
+
+top10fatalityW <- covid19 %>%
+    filter(Country %in% top10fatality$Country)
+
+# extract whole records of the top 10 countries with highest test number
+top10test <- lastDay_data %>%
+    arrange(desc(Tests_1M_Pop)) %>%
+    head(10) %>%
+    select(Country)
+
+top10testMW <- covid19 %>%
+    filter(Country %in% top10test$Country)
 
 #' ### 8
+continent_data <- lastDay_data %>%
+    group_by(Continent) %>%
+    filter(Continent != 0) %>%
+    summarize(Confirmed = sum(CumCases),
+              Death = sum(CumDeaths),
+              Recovered = sum(CumRecovered),
+              Test = sum(CumTests))
 
+continent_data
 
 #' ### 9
-
+top10caseW %>%
+    ggplot(aes(Date, log(CumCases), group = Country, col = Country)) +
+        geom_line() +
+        ggtitle("COVID-19 Total Cases (2020)") +
+        xlab("Date") +
+        ylab("Count (log)") +
+        scale_colour_viridis_d() +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
 #' ### 10
-
+top10activeW %>%
+    gather("column", "value", "NewCases":"Recovered") %>%
+    ggplot(aes(Date, log(value), group = column, col = column)) +
+        geom_line() +
+        ggtitle("COVID-19 Cases (2020)") +
+        xlab("Date") +
+        ylab("Count (log)") +
+        scale_colour_viridis_d(name = "",
+                               label = c("confirmed", "death", "recovered")) +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        	  legend.position = "bottom") +
+        facet_wrap(. ~ Countr, ncol = 3)
 
 #' ### 11
-
+top10testMW %>%
+    filter(Date == "2020-05-05") %>%
+    gather("column", "value",
+               c("CumCases", "CumTests", "Tests_1M_Pop")) %>%
+    ggplot(aes(column, value, fill = column)) +
+        geom_col() +
+        ggtitle("COVID-19 Cases (2020)") +
+        xlab("Total Number") +
+        ylab("Count") +
+        scale_x_discrete(labels = c("infacted", "test", "test/mil")) +
+        scale_fill_viridis_d(name = "Total Number",
+                             label = c("infacted", "test", "test/mil")) +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+        	  legend.position = "bottom") +
+        facet_wrap(. ~ Country, ncol = 3)
 
 #' ### 12
-
+continent_data %>%
+    gather("column", "value", -Continent) %>%
+    ggplot(aes(Continent, log(value), fill = column)) +
+        geom_col(position = "dodge") +
+        ggtitle("COVID-19 Cases (2020)") +
+        xlab("Continent") +
+        ylab("Count (Log)") +
+        scale_fill_viridis_d(name = "") +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"),
+              axis.text.x = element_text(angle = 45, vjust = 0.5))
 
 #' ## Task 3: Data-Driven Modeling
 #' ### 1
-
+cor_data <- lastDay_data %>%
+    select(CumCases, CumTests, Population, GDP, GDPCapita)
 
 #' ### 2
-
+ggcorr(cor_data, label = T)
 
 #' ### 3
+cor_data %>%
+    ggplot(aes(CumCases)) +
+        geom_histogram(bins = 50) +
+        ggtitle("Distribution of Cumulative Cases") +
+        xlab("Cumulative Cases") +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
+cor_data %>%
+    ggplot(aes(log(CumCases))) +
+        geom_histogram(aes(y = ..density..), bins = 20) +
+        geom_density(color = "red") +
+        ggtitle("Distribution of Cumulative Cases (Log)") +
+        xlab("Cumulative Cases (Log)") +
+        theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 
 #' ### 4
-
+boxplot.stats(cor_data$CumCases)$out
 
 #' ### 5
+index <- createDataPartition(seq(nrow(cor_data)), p = .65, list = F)
 
+train <- cor_data[index, ]
+test <- cor_data[-index, ]
 
 #' ### 6
+model_1 <- lm(CumCases ~ GDP, data = train)
+summary(model_1)
 
+plot(model_1)
+
+ggplot(model_1, aes(model_1$residuals)) +
+    geom_histogram(aes(y = ..density..), fill = "orange") +
+    geom_density(color = "blue")
+
+test$predict <- predict(model_1, test)
+
+RMSE(test$CumCases, test$predict)
 
 #' ### 7
+model_2 <- lm(CumCases ~ ., data = train)
+summary(model_2)
 
+plot(model_2)
+
+ggplot(model_2, aes(model_2$residuals)) +
+    geom_histogram(aes(y = ..density..), fill = "orange") +
+    geom_density(color = "blue")
+
+test$predict <- predict(model_2, test)
+
+RMSE(test$CumCases, test$predict)

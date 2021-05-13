@@ -5,8 +5,8 @@ require(ggplot2)
 
 ## E1
 # 2
-male <- read.csv("ids/1978-2017-australiansdg-indicator-8-5-2a-males.csv")
-female <- read.csv("ids/1978-2017-australiansdg-indicator-8-5-2a-females.csv")
+male <- read.csv("ids/data/1978-2017-australiansdg-indicator-8-5-2a-males.csv")
+female <- read.csv("ids/data/1978-2017-australiansdg-indicator-8-5-2a-females.csv")
 
 # 3
 male <- male %>%
