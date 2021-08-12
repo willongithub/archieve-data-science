@@ -1,0 +1,56 @@
+---
+title: "Introduction to Data Science G (11516)"
+subtitle: "Final Assesment"
+author: ""
+date: "Semester 1, 2021"
+output: pdf_document
+---
+
+## Part A - Data Science Questions
+
+### Q1)
+From your understanding of ethical data science, mention three principles of a code of ethics that 
+any data scientist should consider.
+
+* P1: Do no harm to the society;
+* P2: Respect the privacy;
+* P3: Preserve the trustworthiness of the data science community.
+
+### Q2)
+To build a visualisation using the ggplot2 library, we use the following template:
+```
+ggplot(data = [dataset], mapping = aes(x = [x-variable], y = [y-variable]))+
+    geom_xxx() +
+    other options
+```
+Based on the above template, mention the main components of building a graph using ggplot2 and 
+describe the meaning of each of these components.
+
+A: The graph built from ggplot2 comes from 3 components: the data, the coordinate system (aesthetic) and the visual marks (geom). The first argument in function `ggplot()` above is `data`, the dataset on which you want to build a graph. The second argument `aes()`, defines the coordinate of the data in the graph. And then you add layers of visual marks on the data, which can have various attributes, like `geom_xxx()` above, that are different kind of plots or other options such as label, tittle and theme.
+
+### Q3)
+Describe three properties of the correlation coefficient of two variables
+
+1. Linearity
+2. Direction
+3. Strength
+
+
+### Q4)
+Imagine we have a dataset that lists the heights of the fathers and their sons. You have built a linear 
+model that encodes the relationship between the fathers’ heights and the sons’ heights as follows:
+```
+lm(son ~ father, data = heights_data)
+
+Call:
+lm(formula = son ~ father, data = heights_data)
+
+Coefficients:
+(Intercept) father 
+    70.45   0.50
+```
+The estimated coefficient (i.e. intercept and slope), which describes the relationship between the 
+fathers’ and sons’ heights can be interpreted as:
+
+A: Using this dataset, the result of the fitted linear model is: `y = 70.45 + 0.50 * x`, slope = `0.50`, intercept = `70.45`, which means estimated `height of son` equals `70.45` + `0.50` * `height of father`.
+

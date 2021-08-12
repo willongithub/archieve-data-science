@@ -48,8 +48,7 @@ dictionary <- read_csv(url2)
 glimpse(dictionary)
 
 # 6
-keys <-
-    count_var %>%
+keys <- count_var %>%
     filter(n > 3500) %>%
     pull(key)
 
@@ -63,17 +62,27 @@ print(keys)
 
 ## E4
 # first
+# 1
 View(count_var)
 pattern <- c("newrel" = "new_rel",
              "newinc" = "new_inc",
              "rdxsurvey" = "rdx_survey",
              "agegroup" = "age_group",
              "labconf" = "lab_conf")
-data2 <-
-    data2 %>%
-    mutate(key = str_replace_all(key, pattern)) %>%
-    tibble()
+
+# 2
+data2 <- data2 %>% mutate(key = str_replace_all(key, pattern))
 
 # second
+# 1
+data3 <- data2 %>% filter(str_detect(key, "[0-9]"))
+
+# 3
+data4 <- data3 %>% separate(key, c("new", "type", "sexage"))
+
+# 5
+data5 <- data4 %>% separate(sexage, c("sex", "age"), sep = 1)
 
 # third
+# 1
+data6 <- data5 %>% select(-c("new", "iso2", "iso3"))
