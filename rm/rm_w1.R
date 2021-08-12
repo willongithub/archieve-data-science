@@ -3,7 +3,7 @@
 library(readxl)
 
 # 1.1
-nbasalary <- read_excel("data/nbasalary.csv")
+nbasalary <- read_excel("rm/data/nbasalary.csv")
 head(nbasalary, 10)
 attach(nbasalary)
 Salary
@@ -17,7 +17,7 @@ qqline(Salary)
 logSalary <- log(Salary)
 head(logSalary)
 
-countries <- read.csv("data/countries.csv")
+countries <- read.csv("rm/data/countries.csv")
 attach(countries)
 t.test(Life)
 t.test(Life, conf.level=0.9)
