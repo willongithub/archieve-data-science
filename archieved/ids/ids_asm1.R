@@ -1,7 +1,7 @@
 #' ---
 #' title: "Introduction to Data Science 11516 G"
 #' subtitle: "Assignment 1 - Data Wrangling and Exploration"
-#' author: "Siqi Wu (u3229442)"
+#' author: ""
 #' date: "17/04/2021"
 #' output:
 #'   pdf_document:
@@ -20,7 +20,7 @@ if (!("tidyverse" %in% rownames(installed.packages()))) {
 require(tidyverse)
 
 # suppress warning message for clean report
-options(warn = - 1)  
+options(warn = - 1)
 
 ## 1
 # setup path to the 19 CSV files
