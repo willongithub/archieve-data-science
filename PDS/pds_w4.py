@@ -18,7 +18,6 @@ data_list_2 = io.read_data_file("PDS/data/ellipse2.txt")
 # print(data_list_2)
 
 top = tkinter.Tk()
-top.title("Canvas Window")
 c = tkinter.Canvas(top, bg="white", height=900, width=1440)
 
 dataset = data_list_1
