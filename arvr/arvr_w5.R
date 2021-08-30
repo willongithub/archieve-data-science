@@ -77,7 +77,7 @@ ui_3 <- fluidPage(
 
 server_3 <- function(input, output) {}
 
-shinyApp(ui = ui_3, server = server_3)
+shinyApp(ui = ui_3, server = server_3, display.mode = "showcase")
 
 
 # Exercise 4
@@ -96,7 +96,7 @@ server_4 <- function(input, output) {
     })
 }
 
-shinyApp(ui = ui_4, server = server_4)
+shinyApp(ui = ui_4, server = server_4, display.mode = "showcase")
 
 
 # Exercise 5
@@ -106,7 +106,7 @@ ui_5 <- fluidPage(
 
 server_5 <- function()
 
-shinyApp(ui = ui_5, server = server_5)
+shinyApp(ui = ui_5, server = server_5, display.mode = "showcase")
 
 
 # Exercise 6
