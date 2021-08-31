@@ -7,11 +7,11 @@ ui <- fluidPage(
 
 	sidebarLayout(
 		sidebarPanel(
-			selectInput("var_0", 
-		                label = "Choose a variable to display",
-		                choices = c("Percent White", "Percent Black",
-		                            "Percent Hispanic", "Percent Asian"),
-		                selected = "Percent White"),
+			selectInput("var_0",
+		              label = "Choose a variable to display",
+		              choices = c("Percent White", "Percent Black",
+		                          "Percent Hispanic", "Percent Asian"),
+		              selected = "Percent White"),
 			sliderInput(),
 			actionButton(),
 			textOutput("var_2"),
@@ -30,7 +30,7 @@ ui <- fluidPage(
 
 # Define app logic
 server <- function(input, output) {
-	
+
 	output$var_2 <- renderText({
 		paste("Hello Shiny!", input$var_1)
 	})
@@ -41,12 +41,12 @@ server <- function(input, output) {
       "Percent Black" = list(counties$black, "black", "% Black"),
       "Percent Hispanic" = list(counties$hispanic, "darkorange", "% Hispanic"),
       "Percent Asian" = list(counties$asian, "darkviolet", "% Asian"))
-        
+
     args$min <- input$range[1]
     args$max <- input$range[2]
-  
+
     do.call(percent_map, args)
-    })
+  })
 }
 
 # Run the app

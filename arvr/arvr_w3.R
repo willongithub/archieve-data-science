@@ -146,7 +146,9 @@ data(flights)
 flight_list <- flights
 
 # 1
-flight_list$dest_lat_long <- sprintf("%.2f:%.2f", flights$dest_lat, flights$dest_long)
+flight_list$dest_lat_long <- sprintf("%.2f:%.2f",
+                                     flights$dest_lat,
+                                     flights$dest_long)
 
 # 2
 dest_count <- table(flight_list$dest_lat_long)

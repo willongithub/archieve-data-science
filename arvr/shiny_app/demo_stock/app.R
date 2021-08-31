@@ -38,20 +38,20 @@ ui <- fluidPage(
 # Server logic
 server <- function(input, output) {
 
-  dataInput <- reactive({  
+  data_input <- reactive({
       getSymbols(input$symb, src = "yahoo",
           from = input$dates[1],
           to = input$dates[2],
           auto.assign = FALSE)
   })
 
-  finalInput <- reactive({
-    if (!input$adjust) return(dataInput())
-    adjust(dataInput())
+  final_input <- reactive({
+    if (!input$adjust) return(data_input())
+    adjust(data_input())
   })
 
   output$plot <- renderPlot({
-    chartSeries(finalInput(), theme = chartTheme("white"),
+    chartSeries(final_input(), theme = chartTheme("white"),
         type = "line", log.scale = input$log, TA = NULL)
   })
 }

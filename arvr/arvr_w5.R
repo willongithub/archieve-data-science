@@ -75,9 +75,11 @@ ui_3 <- fluidPage(
     tags$a(href = "https://www.google.com.au/", "Google")
 )
 
-server_3 <- function(input, output) {}
+server_3 <- function(input, output) {
 
-shinyApp(ui = ui_3, server = server_3, display.mode = "showcase")
+}
+
+shinyApp(ui = ui_3, server = server_3)
 
 
 # Exercise 4
@@ -96,40 +98,125 @@ server_4 <- function(input, output) {
     })
 }
 
-shinyApp(ui = ui_4, server = server_4, display.mode = "showcase")
+shinyApp(ui = ui_4, server = server_4)
 
 
 # Exercise 5
-ui_5 <- fluidPage(
+require(rgl)
+require(car)
 
+data(iris)
+x <- iris$Sepal.Length
+y <- iris$Petal.Length
+z <- iris$Sepal.Width
+
+ui_5 <- fluidPage(
+    rglwidgetOutput("plot", width = 1024, height = 768)
 )
 
-server_5 <- function()
+server_5 <- function(input, output) {
+    output$plot <- renderRglwidget({
+        rgl.open(useNULL = T)
+        scatter3d(x, y, z,
+                  groups = iris$Species,
+                  col = as.numeric(iris$Species), surface = F)
+        rglwidget()
+    })
+}
 
-shinyApp(ui = ui_5, server = server_5, display.mode = "showcase")
+shinyApp(ui = ui_5, server = server_5)
 
 
 # Exercise 6
-require(rgl)
-library(car)
+set.seed(111)
 
-ui_5 <- fluidPage(
-    rglwidget
+ui_6 <- fluidPage(
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput("n",
+                        label = "n",
+                        min = 10,
+                        max = 100,
+                        value = 10,
+                        step = 10)
+        ),
+        mainPanel(
+            rglwidgetOutput("plot", width = 1024, height = 768)
+        )
+    )
 )
 
-server_6 <- function()
+server_6 <- function(input, output) {
+    output$plot <- renderRglwidget({
+        n <- input$n
+        rgl.open(useNULL = T)
+        scatter3d(rnorm(n), rnorm(n), rnorm(n))
+        rglwidget()
+    })
+}
 
 shinyApp(ui = ui_6, server = server_6)
 
 
 # Exercise 7
-ui_7 <- fluidPage(
+require(threejs)
 
+ui_7 <- fluidPage(
+    titlePanel("Population of world cities"),
+
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput("n", "# of cities to show",
+                        value = 5000,
+                        min = 100,
+                        max = 30000,
+                        step = 100),
+            br(),
+            p("Use the mouse zoom to zoom in/out."),
+            p("Click and drag to rotate.")
+        ),
+        mainPanel(
+            globeOutput("globe")
+        )
+    )
 )
 
-server_7 <- function()
+data(world.cities, package = "maps")
+earth_dark <- list(img = system.file("images/world.jpg", package = "threejs"),
+                                     bodycolor = "blue",
+                                     emissive = "#073826",
+                                     lightcolor = "#211212")
 
-shinyApp(ui = ui_7, server = server_7)
+server_7 <- function(input, output) {
+    options(warn = -1) # suppress warning
+    h <- 300 # height of the population bar
+
+    cull <- reactive({
+        world.cities[order(world.cities$pop, decreasing=TRUE)[1:input$n], ]
+    })
+
+    values <- reactive({
+        cities <- cull()
+        value <- h * cities$pop / max(cities$pop)
+        col <- rainbow(10, start=2.8 / 6, end=3.4 / 6)
+        names(col) <- c()
+        # Extend palette to data values
+        col <- col[floor(length(col) * (h - value) / h) + 1]
+        list(value=value, color=col, cities=cities)
+    })
+
+    output$globe <- renderGlobe({
+        v <- values()
+        # p <- input$map
+        args <- c(earth_dark, list(lat=v$cities$lat, long=v$cities$long,
+                                   value=v$value, color=v$col, 
+                                   atmosphere=TRUE))
+        do.call(globejs, args=args)
+    })
+
+}
+
+shinyApp(ui_7, server_7)
 
 
 # Exercise 8
@@ -144,13 +231,41 @@ runExample("03_reactivity")
 
 
 # Homework
-data(iris)
-
-# Exercise 5
 ui_hw <- fluidPage(
-
+    titlePanel("Data Viwer"),
+    sidebarLayout(
+        
+        sidebarPanel(
+            helpText("Please select the column to plot as histogram."),
+            
+            numericInput("sample",
+                     "# of samples to plot:",
+                     value = 500, min = 100, max = 1000, step = 100),
+            
+            selectInput("selection",
+                        "Select the columns to show",
+                        choices = c("Population",
+                                    "Latitude",
+                                    "Longitude"),
+                        selected = "pop")
+        ),
+        mainPanel(
+            plotOutput("plot")
+        )
+    )
 )
 
-server_hw <- function()
+server_hw <- function(input, output) {
+    output$plot <- renderPlot({
+        data <- switch(input$selection,
+                       "Population" = world.cities$pop,
+                       "Latitude" = world.cities$lat,
+                       "Longitude" = world.cities$long)
+        
+        num <- input$sample
+        
+        hist(data[1:num])
+    })
+}
 
-shinyApp(ui = ui_hw, server = server_hw)
+shinyApp(ui_hw, server_hw)
