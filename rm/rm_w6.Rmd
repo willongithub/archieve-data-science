@@ -1,0 +1,67 @@
+---
+title: "Regression Modelling Lab Week 6"
+output: html_notebook
+---
+
+## 4.1
+### a)
+```{r a), echo=TRUE}
+juice <- read.csv("rm/data/nyjuice.csv")
+head(juice)
+plot(Cases ~ Day, data = juice)
+abline(x, color=red)
+```
+
+### b)
+```{r b), echo=TRUE}
+md_1 <- lm(Cases ~ Day, data = juice)
+md_1
+```
+
+### c)
+```{r c), echo=TRUE}
+juice$Day2 <- (juice$Day)^2
+md_2 <- lm(Cases ~ Day + Day2, data = juice)
+md_2
+```
+
+### d)
+```{r d), echo=TRUE}
+plot(md_1, 1)
+plot(md_2, 1)
+summary(md_1)
+summary(md_2)
+```
+
+## 4.3
+```{r echo=TRUE}
+internet <- read.csv("rm/data/internet.csv")
+head(internet)
+```
+### original
+```{r echo=TRUE}
+md_3 <- lm(Int ~ Gdp, data = internet)
+```
+
+### logarithm transformation
+```{r echo=TRUE}
+# internet$Gdp_log <- log(internet$Gdp)
+# internet$Int_log
+md_4 <- lm(log(Int) ~ log(Gdp), data = internet)
+```
+
+### square root transforamtion
+```{r echo=TRUE}
+md_5 <- lm(sqrt(Int) ~ sqrt(Gdp), data = internet)
+```
+
+### Comparison
+```{r echo=TRUE}
+summary(md_3)
+summary(md_4)
+summary(md_5)
+```
+
+
+
+
