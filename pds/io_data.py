@@ -1,17 +1,8 @@
-from asyncio.windows_events import NULL
-from pickle import NONE
-from posixpath import split
-import re
-from unittest import result
+'''
+Helper functions for PDS lab tutorial.
+'''
 from numpy import Inf, average
 
-from pandas import offsets
-
-
-print(__doc__)
-'''
-Helper functions for pds lab tutorial w4, w5.
-'''
 # function for reading 2-D data from text file and save to list of tuples
 def read_data_file(filename):
     dataset = [] # this is a python list
@@ -78,43 +69,42 @@ def read_multi_dim_data(filename):
                 if len(raw_line) == 0:
                     # print("EOF")
                     break
-        print("close file status:", file.closed)
+        print("file closed:", file.closed)
     except Exception as e:
         print(e.args[0])
     return result
 
 
 # Q9
-PAR = 2*0.9
-def disp_point(canvas, sample_list, radius, color, scaler):
+def disp_point(canvas, sample_list, radius, color, scaler, param):
   r = radius
   for sample in sample_list:
     # x = sample[0]*scaler - 4.3*scaler*0.9
     # y = sample[1]*scaler - 2.0*scaler*0.9
-    x = sample[0]*scaler - PAR*scaler*2
-    y = sample[1]*scaler - PAR*scaler
-    canvas.create_oval(x - r, y - r, x + r, y + r, fill=color)
+    x = sample[0]*scaler - param*scaler
+    y = sample[1]*scaler - param*scaler*0.5
+    canvas.create_oval(x - r, y - r, x + r, y + r, fill=color, outline=color)
 
-def disp_label(tkinker, canvas, sample_list, scaler):
-    for i in range(3):
-        x = sample_list[i][0]
-        y = sample_list[i][1]
+def disp_label(tkinker, canvas, sample_list, scaler, param, colour):
+    for i in range(len(sample_list)):
+        x = round(sample_list[i][0], 1)
+        y = round(sample_list[i][1], 1)
         label = "#" + str(i + 1) + " (" + str(x) + ", " + str(y) + ")"
         # x = x*scaler - 4.3*scaler*0.9
         # y = y*scaler - 2.0*scaler*0.9
-        x = x*scaler - PAR*scaler*2
-        y = y*scaler - PAR*scaler
-        x2 = x - scaler*0.2
-        y2 = y + scaler*0.7
+        x = x*scaler - param*scaler
+        y = y*scaler - param*scaler*0.5
+        x2 = x - scaler*0.3
+        y2 = y + scaler*0.9
         canvas.create_line(x, y, x2, y2)
-        tkinker.Label(canvas, text=label, bg='gray').place(x=x2, y=y2)
+        tkinker.Label(canvas, text=label, bg=colour).place(x=x2, y=y2)
 
 # Week 6 Q1
 def read_data_dict(filename):
     result = {}
     try:
         with open(filename, 'r') as f:
-            key = NULL
+            key = None
             value = []
             count = 0
             while True:
@@ -140,10 +130,10 @@ def read_data_dict(filename):
                     key = line[4]
                 # put new line into tuple list
                 value.append(tuple(line[:4]))
-        print("line read:", count)
+        # print("line read:", count)
+        print("file closed:", f.closed)
     except Exception as e:
         print(e.args[0])
-    print("file closed:", f.closed)
     return result
 
 # Week 6 Q2
@@ -165,22 +155,26 @@ def find_nearest_centre(samples, centres, target):
             result.append((p[0], p[1], t[0], t[1]))
     return result
 # 6, 10
-def draw_lines(pairs, canvas, scalar):
-    for p in pairs:
-        p[0], p[2] = [(i - PAR*2)*scalar for i in [p[0], p[2]]]
-        p[1], p[3] = [(i - PAR)*scalar for i in [p[1], p[3]]]
-        canvas.create_line(p[0], p[1], p[2], p[3])
+def draw_lines(samples, centre, canvas, scalar, param):
+    c = [0]*2
+    c[0] = (centre[0] - param)*scalar
+    c[1] = (centre[1] - param*0.5)*scalar
+    for p in samples:
+        p = list(p)
+        # p[0], p[2] = [(i - PAR*2)*scalar for i in [p[0], p[2]]]
+        # p[1], p[3] = [(i - PAR)*scalar for i in [p[1], p[3]]]
+        p[0] = (p[0] - param)*scalar
+        p[1] = (p[1] - param*0.5)*scalar
+        canvas.create_line(p[0], p[1], c[0], c[1])
 # 7, 8, 9
 def find_centre(samples):
-    result = []
     d = Inf
     c, t = [0]*2, [0]*2
-    c[0], c[1] = average([zip(i[0], i[1]) for i in samples])
+    c[0] = average([i[0] for i in samples])
+    c[1] = average([i[1] for i in samples])
     for p in samples:
         if dist2(p, c) < d:
             d = dist2(p, c)
             t[0], t[1] = p[0], p[1]
-    for p in samples:
-        result.append((p[0], p[1], t[0], t[1]))
+    result = t
     return result
-# Week 6 Q3
