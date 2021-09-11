@@ -5,7 +5,7 @@ Week 6 Tutorial
 """
 print(__doc__)
 
-# %% Q1
+# %%
 # reload when debug
 # from importlib import reload
 # import sys
@@ -15,20 +15,22 @@ from sys import argv
 import io_data as io
 file_path = ""
 # %%
+# from sys import argv
 # import pds.io_data as io
 # file_path = "pds/"
-# %%
+
+# %% Q1
 iris_dict = io.read_data_dict(file_path + "data/iris.data")
 keys = list(iris_dict.keys())
 [print(type(iris_dict.keys()), keys[i], type(iris_dict[keys[i]]),
     len(iris_dict[keys[i]])) for i in range(len(keys))];
+
 # %% Q2
 import tkinter
 # define the width of window created
-if argv[1] != None:
+WINDOW_SIZE = 1024
+if len(argv) > 1:
     WINDOW_SIZE = int(argv[1])
-else:
-    WINDOW_SIZE = 1024
 # %% 1)
 iris_list = io.read_multi_dim_data(file_path + "data/iris.data")
 max_x = max([i[0] for i in iris_list])
@@ -51,6 +53,7 @@ io.disp_point(canvas, centres, 8, 'black', scalar, param)
 io.disp_label(tkinter, canvas, centres, scalar, param, 'white')
 canvas.pack()
 window_1.mainloop()
+
 # %% 3)
 list_1 = io.find_nearest_centre(iris_list, centres, centre_1)
 # %% 4)
@@ -59,6 +62,7 @@ list_2 = io.find_nearest_centre(iris_list, centres, centre_2)
 list_3 = io.find_nearest_centre(iris_list, centres, centre_3)
 # %% 6)
 lists = [list_1, list_2, list_3]
+
 # %%
 window_2 = tkinter.Tk()
 window_2.title("Data Viwer");
@@ -70,6 +74,7 @@ for l, t in zip(lists, centres):
     io.draw_lines(l, t, canvas, scalar, param)
 canvas.pack()
 window_2.mainloop()
+
 # %% 7)
 window_3 = tkinter.Tk()
 window_3.title("Data Viwer");
@@ -115,6 +120,7 @@ io.disp_point(canvas, centres, 8, 'black', scalar, param)
 io.disp_label(tkinter, canvas, centres, scalar, param, 'white')
 canvas.pack()
 window_4.mainloop()
+
 # %%
 window_5 = tkinter.Tk()
 window_5.title("Data Viwer")
@@ -132,6 +138,7 @@ for l, t in zip(lists, centres):
     io.draw_lines(l, t, canvas, scalar, param)
 canvas.pack()
 window_5.mainloop()
+
 # %%
 window_6 = tkinter.Tk()
 window_6.title("Data Viwer")

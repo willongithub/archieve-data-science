@@ -1,6 +1,7 @@
 '''
 Helper functions for PDS lab tutorial.
 '''
+from unittest import result
 from numpy import Inf, average
 
 # function for reading 2-D data from text file and save to list of tuples
@@ -70,7 +71,7 @@ def read_multi_dim_data(filename):
                     # print("EOF")
                     break
         print("file closed:", file.closed)
-    except Exception as e:
+    except FileNotFoundError as e:
         print(e.args[0])
     return result
 
@@ -139,21 +140,24 @@ def read_data_dict(filename):
 # Week 6 Q2
 # 3, 4, 5
 def dist2(p1, p2):
-    result = (p1[0] - p2[0])**2 + (p1[1] - p2[1])**2
+    result = 0
+    for i in range(2):
+        result += (p1[i] - p2[i])**2
     return result
 
 def find_nearest_centre(samples, centres, target):
     result = []
     for p in samples:
+        t = None
         d = Inf
-        t = [0]*2
         for c in centres:
             if dist2(p, c) < d:
                 d = dist2(p, c)
-                t[0], t[1] = c[0], c[1]
-        if t == list(target[:2]):
+                t = c
+        if t[0:2] == target[:2]:
             result.append((p[0], p[1], t[0], t[1]))
     return result
+
 # 6, 10
 def draw_lines(samples, centre, canvas, scalar, param):
     c = [0]*2
@@ -166,6 +170,7 @@ def draw_lines(samples, centre, canvas, scalar, param):
         p[0] = (p[0] - param)*scalar
         p[1] = (p[1] - param*0.5)*scalar
         canvas.create_line(p[0], p[1], c[0], c[1])
+
 # 7, 8, 9
 def find_centre(samples):
     d = Inf
