@@ -1,7 +1,9 @@
-print(__doc__)
 '''
-Helper functions for pds lab tutorial w4, w5.
+Helper functions for PDS lab tutorial.
 '''
+from unittest import result
+from numpy import Inf, average
+
 # function for reading 2-D data from text file and save to list of tuples
 def read_data_file(filename):
     dataset = [] # this is a python list
@@ -42,8 +44,8 @@ def find_nearest_neighbour(sample_point, dataset):
             nearest_sample[1] = y
     return nearest_sample
 
-
-# Question 8
+# Week 5
+# Q8
 def read_multi_dim_data(filename):
     result = []
     try:
@@ -56,8 +58,8 @@ def read_multi_dim_data(filename):
             count = 0
             # read lines and skip empty lines in between
             while True:
+                raw_line = raw_line.replace('\n', '')
                 items = raw_line.split(',')
-                line = line.replace('\n', '')
                 result.append(tuple([float(n) for n in items[:4]]))
                 count += 1
                 # print("add entry: #", count, end='\r')
@@ -68,32 +70,116 @@ def read_multi_dim_data(filename):
                 if len(raw_line) == 0:
                     # print("EOF")
                     break
-        print("close file status:", file.closed)
-    except Exception as e:
+        print("file closed:", file.closed)
+    except FileNotFoundError as e:
         print(e.args[0])
     return result
 
 
-# Question 9
-def disp_point(canvas, sample_list, radius, color):
+# Q9
+def disp_point(canvas, sample_list, radius, color, scaler, param):
   r = radius
-  scale = 100
-  shift = 100
   for sample in sample_list:
-    x = sample[0]*scale + shift
-    y = sample[1]*scale + shift
-    canvas.create_oval(x - r, y - r, x + r, y + r, fill=color)
+    # x = sample[0]*scaler - 4.3*scaler*0.9
+    # y = sample[1]*scaler - 2.0*scaler*0.9
+    x = sample[0]*scaler - param*scaler
+    y = sample[1]*scaler - param*scaler*0.5
+    canvas.create_oval(x - r, y - r, x + r, y + r, fill=color, outline=color)
 
-def disp_label(tkinker, canvas, sample_list):
-    scale = 100
-    shift = 100
-    for i in range(3):
-        x = sample_list[i][0]
-        y = sample_list[i][1]
+def disp_label(tkinker, canvas, sample_list, scaler, param, colour):
+    for i in range(len(sample_list)):
+        x = round(sample_list[i][0], 1)
+        y = round(sample_list[i][1], 1)
         label = "#" + str(i + 1) + " (" + str(x) + ", " + str(y) + ")"
-        x = x*scale + shift
-        y = y*scale + shift
-        x2 = x - 50
-        y2 = y + 150
+        # x = x*scaler - 4.3*scaler*0.9
+        # y = y*scaler - 2.0*scaler*0.9
+        x = x*scaler - param*scaler
+        y = y*scaler - param*scaler*0.5
+        x2 = x - scaler*0.3
+        y2 = y + scaler*0.9
         canvas.create_line(x, y, x2, y2)
-        lb = tkinker.Label(canvas, text=label, bg='gray').place(x=x2, y=y2)
+        tkinker.Label(canvas, text=label, bg=colour).place(x=x2, y=y2)
+
+# Week 6 Q1
+def read_data_dict(filename):
+    result = {}
+    try:
+        with open(filename, 'r') as f:
+            key = None
+            value = []
+            count = 0
+            while True:
+                # skip empty line
+                while True:
+                    raw = f.readline()
+                    if len(raw) == 1:
+                        continue
+                    else:
+                        break
+                # eof
+                if len(raw) == 0:
+                    result[key] = value
+                    break
+                raw = raw.replace('\n', '')
+                line = raw.split(',')
+                count += 1
+                # store previous category if new category found
+                if line[4] != key:
+                    if len(value) > 0:
+                        result[key] = value
+                        value.clear()
+                    key = line[4]
+                # put new line into tuple list
+                value.append(tuple(line[:4]))
+        # print("line read:", count)
+        print("file closed:", f.closed)
+    except Exception as e:
+        print(e.args[0])
+    return result
+
+# Week 6 Q2
+# 3, 4, 5
+def dist2(p1, p2):
+    result = 0
+    for i in range(2):
+        result += (p1[i] - p2[i])**2
+    return result
+
+def find_nearest_centre(samples, centres, target):
+    result = []
+    for p in samples:
+        t = None
+        d = Inf
+        for c in centres:
+            if dist2(p, c) < d:
+                d = dist2(p, c)
+                t = c
+        if t[0:2] == target[:2]:
+            result.append((p[0], p[1], t[0], t[1]))
+    return result
+
+# 6, 10
+def draw_lines(samples, centre, canvas, scalar, param):
+    c = [0]*2
+    c[0] = (centre[0] - param)*scalar
+    c[1] = (centre[1] - param*0.5)*scalar
+    for p in samples:
+        p = list(p)
+        # p[0], p[2] = [(i - PAR*2)*scalar for i in [p[0], p[2]]]
+        # p[1], p[3] = [(i - PAR)*scalar for i in [p[1], p[3]]]
+        p[0] = (p[0] - param)*scalar
+        p[1] = (p[1] - param*0.5)*scalar
+        canvas.create_line(p[0], p[1], c[0], c[1])
+
+# 7, 8, 9
+def find_centre(samples):
+    d = Inf
+    c, t = [0]*2, [0]*2
+    c[0] = average([i[0] for i in samples])
+    c[1] = average([i[1] for i in samples])
+    for p in samples:
+        if dist2(p, c) < d:
+            d = dist2(p, c)
+            t[0], t[1] = p[0], p[1]
+    result = t
+    return result
