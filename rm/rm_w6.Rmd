@@ -50,7 +50,7 @@ md_3 <- lm(Int ~ Gdp, data = internet)
 md_4 <- lm(log(Int) ~ log(Gdp), data = internet)
 ```
 
-### square root transforamtion
+### square root transformation
 ```{r echo=TRUE}
 md_5 <- lm(sqrt(Int) ~ sqrt(Gdp), data = internet)
 ```
