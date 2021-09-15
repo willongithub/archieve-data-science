@@ -1,0 +1,207 @@
+---
+title: "Regression Modelling Lab Week 7"
+output:
+  html_notebook: default
+---
+
+```{r}
+require(tidyverse)
+require(tidymodels)
+require(caret)
+require(glmnet)
+```
+
+# **1**
+## a)
+```{r}
+?mtcars
+# dim(mtcars)
+glimpse(mtcars)
+```
+```{r}
+set.seed(14)
+c <- initial_split(mtcars, prop = 0.7)
+cars_train <- training(c)
+cars_test <- testing(c)
+dim(cars_train)
+dim(cars_test)
+```
+
+## b)
+```{r echo = T}
+y_train <- cars_train %>% select(mpg) %>% data.matrix()
+x_train <- cars_train %>% select(hp, wt, drat) %>% data.matrix()
+# y_train[1:5]
+# x_train[1:5,]
+
+y_test <- cars_test %>% select(mpg) %>% data.matrix()
+x_test <- cars_test %>% select(hp, wt, drat) %>% data.matrix()
+y_test[1:5]
+x_test[1:5,]
+```
+
+## c)
+```{r echo = T}
+# Produce a seq of lambda to find the optimal
+lambda_seq <- c(0, 10^seq(-2, 2, length.out = 100))
+# head(lambda_seq)
+
+# Use cv,glmnet to cross validate the lambda
+# model_cv <- cv.glmnet(x_train, y_train, alpha = 0, lambda = lambda_seq)
+model_cv <- cv.glmnet(x_train, y_train, alpha = 0, lambda = lambda_seq, nfolds = 5)
+# model_cv
+
+# Retrieve the optimal value
+optimal_lambda <- model_cv$lambda.min
+optimal_lambda
+```
+
+## d)
+```{r}
+# Use glmnet.
+cars_ridge_0 <- glmnet(x_train, y_train, alpha = 0, lambda = optimal_lambda)
+
+# Use tidymodels.
+# penalty = lambda
+# mixture = alpha
+cars_ridge_1 <-
+    linear_reg(penalty = optimal_lambda, mixture = 0) %>%
+    set_engine("glmnet") %>%
+    fit_xy(y = y_train, x = x_train)
+
+# Use built-in method for optimal lambda via privided path.
+cars_ridge_2 <-
+    linear_reg(penalty = 1, mixture = 0) %>%
+    set_engine("glmnet", path_values = lambda_seq) %>%
+    fit_xy(y = y_train, x = x_train)
+
+# Use built-in method for optimal lambda.
+cars_ridge_3 <-
+    linear_reg(penalty = 1, mixture = 0) %>%
+    set_engine("glmnet") %>%
+    fit_xy(y = y_train, x = x_train)
+
+tidy(cars_ridge_0)
+# broom::tidy(cars_ridge_0)
+# broom::tidy(cars_ridge_1)
+# broom::tidy(cars_ridge_2)
+# broom::tidy(cars_ridge_3)
+```
+
+## e)
+```{r}
+pred_0 <- predict(cars_ridge_0, s = optimal_lambda, newx = x_test) %>% as_tibble() %>% .$s1
+pred_1 <- predict(cars_ridge_1, x_test) %>% .$.pred
+pred_2 <- predict(cars_ridge_2, x_test) %>% .$.pred
+pred_3 <- predict(cars_ridge_3, x_test) %>% .$.pred
+```
+
+## f)
+```{r}
+y_true <- y_test %>% as_tibble() %>% .$mpg
+
+data.frame(
+  rmse_0 = RMSE(y_true, pred_0),
+  mae_0 = MAE(y_true, pred_0),
+  r2_0 = R2(y_true, pred_0)
+)
+
+data.frame(
+  rmse_1 = RMSE(y_true, pred_1),
+  mae_1 = MAE(y_true, pred_1),
+  r2_1 = R2(y_true, pred_1)
+)
+
+data.frame(
+  rmse_2 = RMSE(y_true, pred_2),
+  mae_2 = MAE(y_true, pred_2),
+  r2_2 = R2(y_true, pred_2)
+)
+
+data.frame(
+  rmse_3 = RMSE(y_true, pred_3),
+  mae_3 = MAE(y_true, pred_3),
+  r2_3 = R2(y_true, pred_3)
+)
+```
+
+## g)
+```{r}
+model_lasso_1 <-
+    linear_reg(penalty = 1, mixture = 1) %>%
+    set_engine("glmnet") %>%
+    fit_xy(y = y_train, x = x_train)
+
+pred_4 <- predict(model_lasso_1, x_test) %>% .$.pred
+data.frame(
+  rmse_4 = RMSE(y_true, pred_4),
+  mae_4 = MAE(y_true, pred_4),
+  r2_4 = R2(y_true, pred_4)
+)
+```
+
+## h)
+
+# **2**
+## a)
+```{r}
+?swiss
+glimpse(swiss)
+```
+```{r}
+# Get the first 40 obsevations as training set
+prop <- 40/dim(swiss)[1]
+s <- initial_split(swiss, prop = prop)
+swiss_train <- training(s)
+swiss_test <- testing(s)
+dim(swiss_train)
+dim(swiss_test)
+```
+```{r}
+y_train <- swiss_train %>% select(Fertility) %>% as_tibble()
+y_test <- swiss_test %>% select(Fertility) %>% as_tibble()
+x_train <- swiss_train %>% select(!Fertility) %>% as_tibble()
+x_test <- swiss_test %>% select(!Fertility) %>% as_tibble()
+
+y_true <- y_test$Fertility
+```
+
+## b)
+```{r}
+swiss_ridge_1 <-
+    linear_reg(penalty = 1, mixture = 0) %>%
+    set_engine("glmnet") %>%
+    fit_xy(y = y_train, x = x_train)
+
+pred_5 <- predict(swiss_ridge_1, x_test) %>% .$.pred
+data.frame(
+  rmse_5 = RMSE(y_true, pred_5),
+  mae_5 = MAE(y_true, pred_5),
+  r2_5 = R2(y_true, pred_5)
+)
+```
+## c)
+```{r}
+swiss_lasso_1 <-
+    linear_reg(penalty = 1, mixture = 1) %>%
+    set_engine("glmnet") %>%
+    fit_xy(y = y_train, x = x_train)
+
+pred_6 <- predict(swiss_lasso_1, x_test) %>% .$.pred
+data.frame(
+  rmse_6 = RMSE(y_true, pred_6),
+  mae_6 = MAE(y_true, pred_6),
+  r2_6 = R2(y_true, pred_6)
+)
+```
+
+## d)
+From the metrics above, ridge model perform better than lasso model.
+
+
+> Now, click the **Run** button on the chunk toolbar to [execute](https://www.jetbrains.com/help/pycharm/r-markdown.html#run-r-code) the chunk code. The result should be placed under the chunk.
+Click the **Knit and Open Document** to build and preview an output.
+```{r}
+mycars <- within(mtcars, { cyl <- ordered(cyl) })
+mycars
+```

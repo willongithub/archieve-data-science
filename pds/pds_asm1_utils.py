@@ -53,7 +53,7 @@ def _write_result_file(dir: str, result: list):
     """Write the result to a file."""
 
     try:
-        with open(dir + "result.txt", 'x') as f:
+        with open(dir + "result.data", 'x') as f:
             for item in result:
                 f.write(item + '\n')
         print("file closed:", f.closed)
