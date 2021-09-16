@@ -1,7 +1,7 @@
 '''
 Helper functions for PDS lab tutorial.
 '''
-from unittest import result
+
 from numpy import Inf, average
 
 # function for reading 2-D data from text file and save to list of tuples
