@@ -8,7 +8,8 @@
 """Provides implementation of functions for assignment 1."""
 
 import tkinter
-from unittest import result
+
+from rchitect import rprint
 
 def _get_dist(start: tuple, end: tuple) -> float:
     """Computes euclidean distance between start point and end point."""
@@ -189,6 +190,7 @@ def _get_conversion_params(
     return result
 
 
+# TODO(Liam) Deal with datasets with different dimensions.
 # def _check_data_dim(*datasets):
 #     """"""
 #
@@ -202,17 +204,62 @@ def _get_init_centres(dataset: list, cluster: int) -> list:
     """"""
 
     features = []
-    dim = len(dataset[0])
     step = int(len(dataset)/(cluster + 1) + 1)
 
-    for i in range(dim):
-        temp = [sample[i] for sample in dataset]
-        temp.sort()
+    for i in range(len(dataset[0])):
+        temp = sorted([sample[i] for sample in dataset])
         features.append(temp[step::step])
 
     result = [tuple([j[i] for j in features]) for i in range(cluster)]
     
     return result
+
+
+def _get_nearest_centres(dataset: list, centres: list) -> list:
+    """"""
+
+    result = []
+    for d in dataset:
+        dist = float('inf')
+        for c in centres:
+            if _get_dist(d, c) < dist:
+                dist = _get_dist(d, c)
+                centre = c
+            result.append(centre)
+
+    return result
+
+
+def _get_new_centres(dataset: list, affliates: list, centres: list) -> list:
+    """"""
+
+    result = []
+    for c in centres:
+        group = [d for d, a in zip(dataset, affliates) if a == c]
+        new_centre = []
+        for i in range(len(dataset[0])):
+            dim = [g[i] for g in group]
+            new_centre.append(sum(dim)/len(dim))
+        result.append(tuple(new_centre))
+    
+    return result
+
+
+def _get_new_colour(seed):
+    """"""
+
+    colour = '#'
+    for i in range(3):
+        temp = hash(seed)%100
+        if temp > 66:
+            temp = temp
+        elif temp > 33:
+            temp = temp + 100
+        else:
+            temp = temp + 200
+        colour += f'{temp:02x}'
+
+    return colour
 
 
 def show_result(
@@ -224,7 +271,7 @@ def show_result(
     """"""
 
     try:
-        if flag == 'nnc':
+        if flag == '1':
             window = tkinter.Tk()
             window.title("Data Viwer")
             canvas = tkinter.Canvas(window, width=width, height=height)
@@ -242,16 +289,29 @@ def show_result(
             canvas.pack()
             window.mainloop()
         
-        elif flag == 'kmc':
+        elif flag == '2':
             window = tkinter.Tk()
             window.title("Data Viwer")
             canvas = tkinter.Canvas(window, width=width, height=height)
+
+            print(dataset[0])
+            params = _get_conversion_params(dataset[0], width, height)
+
+            colour_dict = {}
+            for sample, centre in zip(dataset):
+                if centre not in colour_dict.keys():
+                    colour_dict[centre] = _get_new_colour(centre)
+
+                sample = _convert_coordinates(sample, params)
+                centre = _convert_coordinates(centre, params)
+                _draw_sample(sample, canvas, colour=colour_dict[centre])
+                _draw_line(sample, centre, canvas)
             
             canvas.pack()
             window.mainloop()
         
         else:
-            print(f"{flag} is unidentified.")
+            print(f"flag {flag} is unidentified.")
             raise ValueError
     except Exception:
         raise
@@ -307,7 +367,7 @@ def k_means_clustering(
     cluster: int=2,
     threshold: float=50,
     output_dir: str='',
-    output: bool=False):
+    output: bool=False) -> object:
     """Implements K-Means Clustering.
 
     This will output the clustering result on canvas of tkinter.
@@ -326,17 +386,22 @@ def k_means_clustering(
 
     input = _read_data_file(input_dir)
 
-    result = []
-    sum_of_dist = float('inf')
+    sum_dist = float('inf')
     centres = _get_init_centres(input, cluster)
-    print(centres)
 
-    while sum_of_dist > threshold:
-        for sample in input:
-            break
+    while sum_dist > threshold:
+        temp = 0
+        affliates = _get_nearest_centres(input, centres)
+        new_centres = _get_new_centres(input, affliates, centres)
+        for new, old in zip(new_centres, centres):
+            temp += _get_dist(new, old)
+        centres = new_centres
+        if temp < sum_dist:
+            sum_dist = temp
 
+    result = input, affliates
 
     if output:
-        _write_result_file(output_dir, result)
+        _write_result_file(output_dir, list(zip(result)))
     
     return result

@@ -23,32 +23,26 @@ def main():
     """Entry point for the programme."""
 
     while True:
-        flag = int(input(PROMPT))
-        if flag == 1:
-            flag = 'nnc'
+        flag = input(PROMPT)
+    
+        if flag == '1':
+            # Question 1
+            # Nearest Neighbour Classifier
+            result = ut.nearest_neighbour_classifier()
             break
-        elif flag == 2:
-            flag = 'kmc'
+
+        elif flag == '2':
+            # Question 2
+            # K-Means Clustering
+            result = ut.k_means_clustering(cluster=2)
             break
+
         else:
             print('Please give valid input.')
     
-    if flag == 'nnc':
-        # Question 1
-        # Nearest Neighbour Classifier
-        result = ut.nearest_neighbour_classifier()
-
-    elif flag == 'kmc':
-        # Question 2
-        # K-Means Clustering
-        result = ut.k_means_clustering()
-
-    else:
-        raise ValueError('Invalid argument provided.')
-    
     ut.show_result(result, flag, WIDTH, HEIGHT)
     
-    print('End')
+    print('End of Process')
 
 if __name__ == '__main__':
     main()
