@@ -5,11 +5,9 @@
 # Name:
 # ID:
 
-"""Provides implementation of functions for assignment 1."""
+"""Implementation of functions for assignment 1."""
 
-import tkinter
-
-from rchitect import rprint
+import tkinter as tk
 
 def _get_dist(start: tuple, end: tuple) -> float:
     """Computes euclidean distance between start point and end point."""
@@ -26,7 +24,7 @@ def _get_dist(start: tuple, end: tuple) -> float:
     return result**0.5
 
 
-def _read_data_file(dir: str) -> list:
+def read_data_file(dir: str) -> list:
     """Reads data samples from txt file."""
 
     result = []
@@ -45,14 +43,14 @@ def _read_data_file(dir: str) -> list:
                 sample = [float(item) for item in raw.split()]
                 result.append(tuple(sample))
                 count += 1
-        print(f"Data samples read: {count}")
-        print("File closed:", f.closed)
+        # print(f"Data samples read: {count}")
+        # print("File closed:", f.closed)
     except Exception:
         raise
     return result
 
 
-def _write_result_file(dir: str, result: list):
+def write_result_file(dir: str, result: list):
     """Write the result to a file."""
 
     output = dir + "result.data"
@@ -67,7 +65,7 @@ def _write_result_file(dir: str, result: list):
         raise
 
 
-def _draw_sample(
+def draw_sample(
     sample: tuple,
     canvas: object,
     shape: str='dot',
@@ -103,7 +101,7 @@ def _draw_sample(
             outline=colour)
 
 
-def _draw_line(
+def draw_line(
     start: tuple,
     end: tuple,
     canvas: object):
@@ -116,45 +114,43 @@ def _draw_line(
         end[1],
     )
 
-def _draw_label(
-    sample: tuple,
+
+def show_labels(
+    coordinates: list,
+    legends: list,
     canvas: object,
-    label: object,
-    legend: str,
-    position: int=4,
-    offset: float=30):
+    size: int=5,
+    offset: float=100):
     """"""
 
-    if position == 1:
-        offset_x = -offset
-        offset_y = -offset
-    elif position == 2:
-        offset_x = offset
-        offset_y = -offset
-    elif position == 3:
-        offset_x = offset
-        offset_y = offset
-    else:
-        offset_x = -offset
-        offset_y = offset
+    offset_x = -offset
+    offset_y = offset
 
-    canvas.create_line(
-        sample[0],
-        sample[1],
-        sample[0] + offset_x,
-        sample[1] + offset_y)
-    label.config(text = legend)
-    label.place(
-        sample[0] + offset_x,
-        sample[1] + offset_y)
+    for c, l in zip(coordinates, legends):
+        canvas.create_line(
+            c[0],
+            c[1],
+            c[0] + offset_x,
+            c[1] + offset_y)
+        canvas.create_oval(
+            c[0] - size,
+            c[1] - size,
+            c[0] + size,
+            c[1] + size,
+            fill='black')
+        tk.Label(
+            canvas, 
+            text=l,
+            bg='gray').place(
+                x = c[0] + offset_x,
+                y = c[1] + offset_y)
 
 
-def _convert_coordinates(
+def convert_coordinates(
     sample: tuple,
     params: tuple,
     index_x: int=0,
-    index_y: int=1,
-    padding: float=30) -> tuple:
+    index_y: int=1) -> tuple:
     """"""
 
     scale = params[0:2]
@@ -166,7 +162,7 @@ def _convert_coordinates(
     return tuple(result)
 
 
-def _get_conversion_params(
+def get_conversion_params(
     dataset: list,
     width: float=800,
     height: float=600,
@@ -182,8 +178,8 @@ def _get_conversion_params(
 
     scale_w = (width - 2*padding)/(max_w - min_w)
     scale_h = (height - 2*padding)/(max_h - min_h)
-    offset_w = [padding if min_w > 0 else -padding][0] - min_w*scale_w
-    offset_h = [padding if min_w > 0 else -padding][0] - min_h*scale_h
+    offset_w = [-padding if min_w > 0 else padding][0] - min_w*scale_w
+    offset_h = [-padding if min_w > 0 else padding][0] - min_h*scale_h
 
     result = (scale_w, scale_h, offset_w, offset_h)
     
@@ -204,7 +200,7 @@ def _get_init_centres(dataset: list, cluster: int) -> list:
     """"""
 
     features = []
-    step = int(len(dataset)/(cluster + 1) + 1)
+    step = int(len(dataset)/(cluster + 1))
 
     for i in range(len(dataset[0])):
         temp = sorted([sample[i] for sample in dataset])
@@ -225,12 +221,15 @@ def _get_nearest_centres(dataset: list, centres: list) -> list:
             if _get_dist(d, c) < dist:
                 dist = _get_dist(d, c)
                 centre = c
-            result.append(centre)
+        result.append(centre)
 
     return result
 
 
-def _get_new_centres(dataset: list, affliates: list, centres: list) -> list:
+def _get_new_centres(
+    dataset: list,
+    affliates: list,
+    centres: list) -> list:
     """"""
 
     result = []
@@ -250,7 +249,7 @@ def _get_new_colour(seed):
 
     colour = '#'
     for i in range(3):
-        temp = hash(seed)%100
+        temp = hash(colour + f'{seed}')%100
         if temp > 66:
             temp = temp
         elif temp > 33:
@@ -265,47 +264,66 @@ def _get_new_colour(seed):
 def show_result(
     dataset: list,
     flag: str,
-    width: float=800,
-    height: float=600,
-    label: bool=False):
+    width: float,
+    height: float):
     """"""
 
     try:
         if flag == '1':
-            window = tkinter.Tk()
-            window.title("Data Viwer")
-            canvas = tkinter.Canvas(window, width=width, height=height)
+            window = tk.Tk()
+            window.title('Data Viwer')
+            window.resizable(False, False)
+            window.iconbitmap('data_viwer.ico')
 
-            params = _get_conversion_params(dataset, width, height)
+            tk.Label(window, text='Nearest Neighbour Classifier').pack()
+
+            canvas = tk.Canvas(window, width=width, height=height)
+
+            params = get_conversion_params(dataset, width, height)
 
             for sample in dataset:
                 if sample[-1] == 'a':
-                    sample = _convert_coordinates(sample, params)
-                    _draw_sample(sample, canvas, colour='red')
+                    sample = convert_coordinates(sample, params)
+                    draw_sample(sample, canvas, colour='red')
+                    
                 elif sample[-1] == 'b':
-                    sample = _convert_coordinates(sample, params)
-                    _draw_sample(sample, canvas, colour='blue')
-            
+                    sample = convert_coordinates(sample, params)
+                    draw_sample(sample, canvas, colour='blue')
+
             canvas.pack()
             window.mainloop()
         
         elif flag == '2':
-            window = tkinter.Tk()
-            window.title("Data Viwer")
-            canvas = tkinter.Canvas(window, width=width, height=height)
+            window = tk.Tk()
+            window.title('Data Viwer')
+            window.resizable(False, False)
+            window.iconbitmap('data_viwer.ico')
 
-            print(dataset[0])
-            params = _get_conversion_params(dataset[0], width, height)
+            tk.Label(window, text='K-Means Clustering').pack()
+
+            canvas = tk.Canvas(window, width=width, height=height)
+
+            params = get_conversion_params(dataset[0], width, height)
 
             colour_dict = {}
-            for sample, centre in zip(dataset):
+            affliates = []
+            for sample, centre in zip(dataset[0], dataset[1]):
+                sample = convert_coordinates(sample, params)
+                centre = convert_coordinates(centre, params)
+                affliates.append(centre)
+
                 if centre not in colour_dict.keys():
                     colour_dict[centre] = _get_new_colour(centre)
 
-                sample = _convert_coordinates(sample, params)
-                centre = _convert_coordinates(centre, params)
-                _draw_sample(sample, canvas, colour=colour_dict[centre])
-                _draw_line(sample, centre, canvas)
+                draw_sample(sample, canvas, colour=colour_dict[centre])
+                draw_line(sample, centre, canvas)
+            
+            centres = list(colour_dict.keys())
+            legends = []
+            for c in centres:
+                count = sum([True for a in affliates if a == c])
+                legends.append(f'{count} samples')
+            show_labels(centres, legends, canvas)
             
             canvas.pack()
             window.mainloop()
@@ -318,10 +336,10 @@ def show_result(
 
 
 def nearest_neighbour_classifier(
-    class_a_dir: str='data/blue_4d.txt',
-    class_b_dir: str='data/red_4d.txt',
-    input_dir: str='data/unknown_4d.txt',
-    output_dir: str='',
+    class_a_dir: str,
+    class_b_dir: str,
+    input_dir: str,
+    output_dir: str,
     output: bool=False) -> list:
     """Implements Nearest Neighbour Classifier.
 
@@ -337,10 +355,13 @@ def nearest_neighbour_classifier(
         output_dir: Directory to dump output.
     """
 
-    class_a = _read_data_file(class_a_dir)
-    class_b = _read_data_file(class_b_dir)
-    input = _read_data_file(input_dir)
+    class_a = read_data_file(class_a_dir)
+    class_b = read_data_file(class_b_dir)
+    input = read_data_file(input_dir)
     # _check_data_dim(class_a, class_b, input)
+
+    class_a_count = 0
+    class_b_count = 0
 
     result = []
     for sample in input:
@@ -353,20 +374,27 @@ def nearest_neighbour_classifier(
                 dist[1] = _get_dist(sample, target)
         if dist[0] >= dist[1]:
             result.append(sample + ('a',))
+            class_a_count += 1
         else:
             result.append(sample + ('b',))
+            class_b_count += 1
     
+    print(result)
+    print(f'{len(result)} unknown samples classified into:')
+    print(f' Class A - {class_a_count} samples')
+    print(f' Class B - {class_b_count} samples')
+
     if output:
-        _write_result_file(output_dir, result)
+        write_result_file(output_dir, result)
     
     return result
 
 
 def k_means_clustering(
-    input_dir: str='data/data_2c_2d.txt',
-    cluster: int=2,
-    threshold: float=50,
-    output_dir: str='',
+    input_dir: str,
+    cluster: int,
+    threshold: float,
+    output_dir: str,
     output: bool=False) -> object:
     """Implements K-Means Clustering.
 
@@ -384,24 +412,33 @@ def k_means_clustering(
         result:
     """
 
-    input = _read_data_file(input_dir)
+    input = read_data_file(input_dir)
 
     sum_dist = float('inf')
-    centres = _get_init_centres(input, cluster)
+    new_centres = _get_init_centres(input, cluster)
 
     while sum_dist > threshold:
         temp = 0
+        centres = new_centres
         affliates = _get_nearest_centres(input, centres)
         new_centres = _get_new_centres(input, affliates, centres)
+        
         for new, old in zip(new_centres, centres):
             temp += _get_dist(new, old)
-        centres = new_centres
+        
         if temp < sum_dist:
             sum_dist = temp
 
     result = input, affliates
 
+    print(f'{len(input)} samples clustered into {cluster} group:')
+    for c in centres:
+        count = sum([True for a in affliates if a == c])
+        print(f' Centre{c} - {count} samples')
+    print(f'Threshhold - {threshold}')
+
     if output:
-        _write_result_file(output_dir, list(zip(result)))
+        out = zip(result)
+        write_result_file(output_dir, list(out))
     
     return result
