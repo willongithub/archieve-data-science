@@ -2,14 +2,14 @@
 
 # Programming for Data Science
 # Assignment 1
-# Classifier and Claster Analysis in Data Science
+# Classifier and Cluster Analysis in Data Science
 # -----------------------------------------------
 # Name:
 # ID:
 
 """Main function of assignment 1."""
 
-import pds_asm1_mata as mata
+import pds_asm1_meta as meta
 import pds_asm1_util as util
 import pds_asm1_gui as gui
 
@@ -17,37 +17,44 @@ def main():
     """Entry point for the programme."""
 
     while True:
-        flag = input(mata.PROMPT)
+        # Select algorithm to run in cli
+        flag = input(meta.PROMPT)
+
+        # Toggle output to cli and file
+        output = True if flag in ('3', '4') else False
     
-        if flag == '1':
+        if flag in ('1', '3'):
             # Question 1
             # Nearest Neighbour Classifier
             result = util.nearest_neighbour_classifier(
-                        mata.CLASS_A_DIR,
-                        mata.CLASS_B_DIR,
-                        mata.UNKNOWN_INPUT_DIR,
-                        mata.OUTPUT_DIR)
-            util.show_result(result, flag, mata.WIDTH, mata.HEIGHT)
+                        meta.CLASS_A_DIR,
+                        meta.CLASS_B_DIR,
+                        meta.UNKNOWN_INPUT_DIR,
+                        meta.OUTPUT_DIR,
+                        output)
+            util.show_result(result, flag, meta.WIDTH, meta.HEIGHT)
 
-        elif flag == '2':
+        elif flag in ('2', '4'):
             # Question 2
             # K-Means Clustering
             result = util.k_means_clustering(
-                        mata.INPUT_DIR,
-                        mata.CLUSTER,
-                        mata.THRESHHOLD,
-                        mata.OUTPUT_DIR)
-            util.show_result(result, flag, mata.WIDTH, mata.HEIGHT)
+                        meta.INPUT_DIR,
+                        meta.CLUSTER,
+                        meta.THRESHHOLD,
+                        meta.OUTPUT_DIR,
+                        output)
+            util.show_result(result, flag, meta.WIDTH, meta.HEIGHT)
 
         elif flag == 'e':
             break
 
         else:
-            app = gui.DataViwer()
+            # Open GUI with empty, 0 or other input
+            app = gui.DataViewer()
             app.mainloop()
             break
     
-    print('End of Process')
+    print('\nEnd of Process')
 
 if __name__ == '__main__':
     main()
