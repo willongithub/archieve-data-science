@@ -1,9 +1,10 @@
 '''
 Helper functions for PDS lab tutorial.
 '''
-from unittest import result
+
 from numpy import Inf, average
 
+# Week 4
 # function for reading 2-D data from text file and save to list of tuples
 def read_data_file(filename):
     dataset = [] # this is a python list
@@ -31,8 +32,7 @@ def read_data_file(filename):
             f.close()
     return dataset
 
-
-# Question 2
+# Q2
 def find_nearest_neighbour(sample_point, dataset):
     nearest_sample = [0]*2
     dist = float('inf')
@@ -43,6 +43,7 @@ def find_nearest_neighbour(sample_point, dataset):
             nearest_sample[0] = x
             nearest_sample[1] = y
     return nearest_sample
+
 
 # Week 5
 # Q8
@@ -75,7 +76,6 @@ def read_multi_dim_data(filename):
         print(e.args[0])
     return result
 
-
 # Q9
 def disp_point(canvas, sample_list, radius, color, scaler, param):
   r = radius
@@ -100,7 +100,9 @@ def disp_label(tkinker, canvas, sample_list, scaler, param, colour):
         canvas.create_line(x, y, x2, y2)
         tkinker.Label(canvas, text=label, bg=colour).place(x=x2, y=y2)
 
-# Week 6 Q1
+
+# Week 6
+# Q1
 def read_data_dict(filename):
     result = {}
     try:
@@ -137,7 +139,8 @@ def read_data_dict(filename):
         print(e.args[0])
     return result
 
-# Week 6 Q2
+# Week 6
+# Q2
 # 3, 4, 5
 def dist2(p1, p2):
     result = 0
@@ -183,3 +186,64 @@ def find_centre(samples):
             t[0], t[1] = p[0], p[1]
     result = t
     return result
+
+
+# Week 7
+def transform_data_for_canvas_display(
+    dataset,
+    index_x=0,
+    index_y=1,
+    width=800,
+    height=600):
+    """Transform data for  canvas."""
+
+    max_w = max([d[index_x] for d in dataset])
+    min_w = min([d[index_x] for d in dataset])
+    max_h = max([d[index_y] for d in dataset])
+    min_h = min([d[index_y] for d in dataset])
+
+    PADDING = 1.05
+
+    scale_w = width/(max_w - min_w)/PADDING
+    scale_h = height/(max_h - min_h)/PADDING
+    offset_w = -min_w*scale_w
+    offset_h = -min_h*scale_h
+    
+    return(scale_w, scale_h, offset_w, offset_h)
+
+
+def display_data(
+    canvas,
+    dataset,
+    scale_x,
+    scale_y,
+    offset_x,
+    offset_y,
+    index_x=0,
+    index_y=1,
+    r=5,
+    colour='black',
+    shape='circle'):
+    """Display data samples on the canvas."""
+
+    for sample in dataset:
+        x = sample[index_x]*scale_x + offset_x
+        y = sample[index_y]*scale_y + offset_y
+    
+        if shape == 'square':
+            canvas.create_rectangle(
+                x - r, y - r, x + r, y + r,
+                outline=colour, fill= colour)
+        elif shape == 'triangle':
+            canvas.create_polygon(
+                x, y + r, x + 0.866*r, y - 0.5*r, x - 0.866*r, y - 0.5*r,
+                outline=colour, fill= colour)
+        elif shape == 'circle':
+            canvas.create_oval(
+                x - r, y - r, x + r, y + r,
+                outline=colour, fill= colour)
+        else:
+            print("No match figure, default to 'circle'.")
+            canvas.create_oval(
+                x - r, y - r, x + r, y + r,
+                outline=colour, fill= colour)
