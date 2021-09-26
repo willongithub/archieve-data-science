@@ -12,7 +12,7 @@ Global parameters.
 Default value set here, modify as desired.
 """
 # Directories for output file, default to working directory:
-OUTPUT_DIR = 'data/'
+OUTPUT_DIR = 'output/'
 FILENAME = 'output.data'
 
 """Tkinter window geometries."""
@@ -27,12 +27,12 @@ CLI parameters.
 Default value set here, modify for different input.
 """
 # Directories for Nearest Neighbour Classifier:
-CLASS_A_DIR = 'data/blue_2d.txt'
-CLASS_B_DIR = 'data/red_2d.txt'
-UNKNOWN_INPUT_DIR = 'data/unknown_2d.txt'
+CLASS_A_DIR = 'assets/blue_2d.txt'
+CLASS_B_DIR = 'assets/red_2d.txt'
+UNKNOWN_INPUT_DIR = 'assets/unknown_2d.txt'
 
 # Directories for K-Means Clustering:
-INPUT_DIR = 'data/data_4c_2d.txt'
+INPUT_DIR = 'assets/data_4c_2d.txt'
 
 # Cluster number and threshold value should be modified accordingly.
 CLUSTER = 4
@@ -44,36 +44,36 @@ Default value set here, modify for different input.
 """
 # Directories for Nearest Neighbour Classifier:
 DATASET_2D = {
-    'class_a_dir': 'data/blue_2d.txt',  # Neighbour class A dir.
-    'class_b_dir': 'data/red_2d.txt',  # Neighbour class B dir.
-    'input_dir': 'data/unknown_2d.txt'  # Unknown input dir.
+    'class_a_dir': 'assets/blue_2d.txt',  # Neighbour class A dir.
+    'class_b_dir': 'assets/red_2d.txt',  # Neighbour class B dir.
+    'input_dir': 'assets/unknown_2d.txt'  # Unknown input dir.
 }
 DATASET_4D = {
-    'class_a_dir': 'data/blue_4d.txt',  # Neighbour class A dir.
-    'class_b_dir': 'data/red_4d.txt',  # Neighbour class B dir.
-    'input_dir': 'data/unknown_4d.txt'  # Unknown input dir.
+    'class_a_dir': 'assets/blue_4d.txt',  # Neighbour class A dir.
+    'class_b_dir': 'assets/red_4d.txt',  # Neighbour class B dir.
+    'input_dir': 'assets/unknown_4d.txt'  # Unknown input dir.
 }
 DATASET_8D = {
-    'class_a_dir': 'data/blue_8d.txt',  # Neighbour class A dir.
-    'class_b_dir': 'data/red_8d.txt',  # Neighbour class B dir.
-    'input_dir': 'data/unknown_8d.txt'  # Unknown input dir.
+    'class_a_dir': 'assets/blue_8d.txt',  # Neighbour class A dir.
+    'class_b_dir': 'assets/red_8d.txt',  # Neighbour class B dir.
+    'input_dir': 'assets/unknown_8d.txt'  # Unknown input dir.
 }
 
 # Directories and other params for K-Means Clustering:
 DATASET_2C_2D = {
-    'input_dir': 'data/data_2c_2d.txt',  # Input dataset dir.
+    'input_dir': 'assets/data_2c_2d.txt',  # Input dataset dir.
     'k': 2,  # Number of clusters.
 }
 DATASET_2C_4D = {
-    'input_dir': 'data/data_2c_4d.txt',  # Input dataset dir.
+    'input_dir': 'assets/data_2c_4d.txt',  # Input dataset dir.
     'k': 2,  # Number of clusters.
 }
 DATASET_4C_2D = {
-    'input_dir': 'data/data_4c_2d.txt',  # Input dataset dir.
+    'input_dir': 'assets/data_4c_2d.txt',  # Input dataset dir.
     'k': 4,  # Number of clusters.
 }
 DATASET_4C_4D = {
-    'input_dir': 'data/data_4c_4d.txt',  # Input dataset dir.
+    'input_dir': 'assets/data_4c_4d.txt',  # Input dataset dir.
     'k': 4,  # Number of clusters.
 }
 
@@ -115,5 +115,5 @@ PROMPT = """
     4) K-Means Clustering (with output)
 > Quit:
     e) Exit
-\nEnter your choice (0/1/2/3/4/e): """
+\nEnter your choice [0/1/2/3/4/e]: """
 
