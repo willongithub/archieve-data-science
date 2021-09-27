@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Exercise 7</title>
+        <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+        <script src="https://unpkg.com/aframe-environment-component@1.2.0/dist/aframe-environment-component.min.js"></script>
+        <script src="https://unpkg.com/aframe-charts-component/dist/aframe-charts-component.min.js"></script>
+    </head>
+    <body>
+
+        <a-scene background="color: grey" cursor="rayOrigin:mouse"> <!-- Cursor mouse clickable. -->
+            <a-light type="point" intensity="1" position="-2 10 10"></a-light>
+
+            <a-assets>
+                <a-asset-item id="lego" src="data/model_obj/lego.obj"></a-asset-item>
+                <a-asset-item id="iron_man" src="data/model_obj/IronMan.obj"></a-asset-item>
+                <a-asset-item id="dog" src="data/model_obj/french_bulldog.obj"></a-asset-item>
+                <!-- <a-asset-item id="model" src="data/model_obj/A380/A380.obj"></a-asset-item> -->
+              </a-assets>
+
+            <a-entity id="barId"           charts="type: bar;      dataPoints: ../data/dataPositive.json" position="20 2 20" rotation="0 0 0"></a-entity>
+            <a-entity id="bubbleId"        charts="type: bubble;   dataPoints: ../data/dataPositive.json" position="-25 2 30" rotation="0 0 0"></a-entity>
+            <a-entity id="pieId"           charts="type: pie;      dataPoints: ../data/dataPositive.json; pie_radius: 5" position="-5 0 35"></a-entity>
+            <a-entity id="cylinderId"      charts="type: cylinder; dataPoints: ../data/dataPositive.json" position="-20 0 15"></a-entity>
+            <a-entity id="pieDoughnutId"   charts="type: pie;      dataPoints: ../data/dataPositive.json; pie_radius: 5; pie_doughnut: true" position="10 15 25"></a-entity>
+
+            <a-light type="point" intensity="0.7" position="1 30 30"></a-light>
+
+            <a-entity position="1 5 20" charts='type: totem;  entity_id_list: barId,bubbleId,pieId,cylinderId,pieDoughnutId;
+                dataPoints_list: {"dataPositive.json": "../data/dataPositive.json", "data.json": "../data/data.json","dataSmall.json": "../data/dataSmall.json"}'>
+            </a-entity>
+            
+            <!-- <a-asset>
+                <a-asset-item id="data" src='[{"x": 1, "y": 8, "z": 0, "size": 1, "color": "#ff0000"},
+                    {"x": -2, "y": 3, "z": 1, "size": 1.5, "color": "#00ff00"},
+                    {"x": -1, "y": 3, "z": 2, "size": 1, "color": "#0000ff"},
+                    {"x": 2, "y": 7, "z": 7, "size": 1.5, "color": "#0000ff"},
+                    {"x": 1, "y": 6, "z": 3, "size": 1, "color": "#4CC3D9"}]'>
+                </a-asset-item>
+            </a-asset> -->
+
+            <!-- <a-entity charts="type: bar; dataPoints: #data; axis_length: 10"></a-entity> --> -->
+            <!-- <a-entity charts="type: bar; dataPoints: ../data/data.json; axis_length: 10"></a-entity>   -->
+            
+            <a-entity movement-controls="fly: true" position="0 0 30" rotation="0 0 0"> <!-- Camera fly movement. -->
+
+            <a-entity position="2 5 15" rotation="0 0 0">
+                <a-camera position="0 -1 4" rotation="0 0 0">
+                    <!-- <a-cursor></a-cursor> -->
+                </a-camera>
+                <a-entity laser-controls="hand: right"></a-entity> <!-- Control for Oculus. -->
+            </a-entity>
+
+            <!-- <a-sky color="gray"></a-sky> -->
+
+            <!-- <a-entity obj-model="obj: #model"></a-entity> -->
+            <a-entity obj-model="obj: #dog" position="0 0 -10"></a-entity>
+            <a-entity obj-model="obj: #lego" position="15 0 5" rotation="0 -90 0"></a-entity>
+            <a-entity obj-model="obj: #iron_man" position="-80 0 50" rotation="0 75 0"></a-entity>
+
+            <!-- Out of the box environment! -->
+            <a-entity environment="preset: forest; dressingAmount: 500"></a-entity>
+            
+        </a-scene>
+
+    </body>
+</html>
