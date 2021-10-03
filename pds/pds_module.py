@@ -3,6 +3,8 @@ Helper functions for PDS lab tutorial.
 '''
 
 from numpy import Inf, average
+from typing import List, Tuple
+from random import sample
 
 # Week 4
 # function for reading 2-D data from text file and save to list of tuples
@@ -247,3 +249,223 @@ def display_data(
             canvas.create_oval(
                 x - r, y - r, x + r, y + r,
                 outline=colour, fill= colour)
+
+
+# Week 9
+def _load_data(filename: str) -> List[Tuple[float]]:
+    """Loads data samples from txt file.
+    
+    Args:
+        filename: A relative path to the file as a string.
+    
+    Returns:
+        A list containing tuples of data samples loaded.
+        Example:
+
+        [(1, 2),
+         (3, 4),
+         (5, 6)]
+
+    Raises:
+        Exception: An error if file not existed.
+    """
+
+    data = []
+    try:
+        with open(filename, 'r') as f:
+            while True:
+                raw = f.readline()
+                # Skip empty lines
+                while raw == '\n':
+                    raw = f.readline()
+                # Check eof and stop if so
+                if len(raw) == 0:
+                    break
+                raw = raw.strip()
+                sample = [float(item) for item in raw.split()]
+                data.append(tuple(sample))
+
+    except Exception:
+        raise
+    return data
+
+def _k_means(
+    input: List[Tuple[float]],
+    cluster: int,
+    threshhold: float = 0.1,
+    iteration: int = 20) -> List[Tuple[float]]:
+    """Runs k-means clustering on the dataset.
+
+    Args:
+        cluster: Number of clusters to calculate.
+        input: A list of data samples as tuple.
+
+    Return:
+        A list containing lists of clusters with data samples as tuple.
+        Example:
+
+        [[(1, 2), (3, 4), (5, 6)],
+         [(1, 2), (3, 4), (5, 6)],
+         [(1, 2), (3, 4), (5, 6)]]
+    """
+
+    wcss_diff, wcss = [float('inf')]*2
+    new_centres = _init_centres(input, cluster)
+
+    while wcss_diff > threshhold:
+        centres = new_centres
+
+        reset = 0
+        while True:
+            if reset == iteration:
+                print(f'Cluster cannot converge!')
+                raise ValueError
+            labels = _assign_nearest_centres(input, centres)
+            cluster_num = 0
+            temp = []
+            for l in labels:
+                if l not in temp:
+                    cluster_num += 1
+                    temp.append(l)
+            if cluster_num == cluster:
+                # print(f'# of resets: {reset}')
+                break
+            else:
+                centres = _init_centres(input, cluster)
+                reset += 1
+                
+        wcss_diff = wcss - _get_wcss(input, labels)
+        wcss = _get_wcss(input, labels)
+        new_centres = _get_new_centres(input, labels, centres)
+    
+    # result = []
+    # for c in centres:
+
+    #     print(f'# of sample in cluster: {labels.count(c)}')
+
+    #     result.append([i for i, l in zip(input, labels) if l == c])
+
+    return centres
+
+def _init_centres(input, cluster):
+    values = []
+    
+    # Randomly selected initial centres
+    for i in range(len(input[0])):
+        dim = [sample[i] for sample in input]
+        values.append(sample(dim, k=cluster))
+    result = [tuple([j[i] for j in values]) for i in range(cluster)]
+
+    # # Evenly placed initial centres
+    # step = int(len(input)/(cluster + 1))
+    # for i in range(len(input[0])):
+    #     temp = sorted([sample[i] for sample in input])
+    #     values.append(temp[step::step])
+    # result = [tuple([j[i] for j in values]) for i in range(cluster)]
+
+    return result
+
+def _assign_nearest_centres(input, centres):
+    labels = []
+    for i in input:
+        dist = float('inf')
+        for c in centres:
+            if _ss(i, c) < dist:
+                dist = _ss(i, c)
+                centre = c
+        labels.append(centre)
+    return labels
+
+def _ss(a, b):
+    ss = 0
+    for i, j in zip(a, b):
+        ss += (i - j)**2
+    return ss
+
+def _get_wcss(input, labels):
+    wcss = 0
+    for i, l in zip(input, labels):
+        wcss += _ss(i, l)
+    return wcss
+
+def _get_new_centres(input, labels, centres):
+    result = []
+    for c in centres:
+        group = [d for d, a in zip(input, labels) if a == c]
+        new_centre = []
+        for i in range(len(input[0])):
+            dim = [g[i] for g in group]
+            new_centre.append(sum(dim)/len(dim))
+        result.append(tuple(new_centre))
+    return result
+
+def _nearest_neighbour(
+    class_a: List[Tuple[float]],
+    class_b: List[Tuple[float]],
+    input: List[Tuple[float]]) -> List[Tuple[float, str]]:
+    """Runs nearest neighbour classifier on the dataset.
+
+    Args:
+        class_b: A list of data samples in class A as tuple.
+        class_b: A list of data samples in class B as tuple.
+        input: A list of data samples as tuple.
+
+    Return:
+        A list containing classification result.
+        Example:
+
+        [(1, 2, 'blue'),
+         (3, 4, 'red'),
+         (5, 6, 'red')]
+    """
+
+    LABEL_A = ('blue', )
+    LABEL_B = ('red', )
+
+    result = []
+    for i in input:
+        dist_a, dist_b = [float('inf')]*2
+        for a, b in zip(class_a, class_b):
+            if _ss(i, a) < dist_a: dist_a = _ss(i, a)
+            if _ss(i, b) < dist_b: dist_b = _ss(i, b)
+        if dist_a <= dist_b: result.append(i + LABEL_A)
+        else: result.append(i + LABEL_B)
+    return result
+
+def nearest_centroid(
+    cluster: int,
+    class_a_dir: str,
+    class_b_dir: str,
+    input_dir: str) -> List[Tuple[float, str]]:
+    """Runs nearest centroid classifier on the dataset.
+
+    Applies Vector Quantisation compression technique on nearest neighbour
+    classification. Runs k-means clustering on the sample classes as
+    pre-processing.
+
+    Args:
+        cluster: Number of clusters to calculate in k-means pre-processing.
+        class_a_dir: A relative path to the file of class A as a string.
+        class_b_dir: A relative path to the file of class B as a string.
+        input_dir: A relative path to the file of input as a string.
+
+    Return:
+        A list containing classification result.
+        Example:
+
+        [(1, 2, 'blue'),
+         (3, 4, 'red'),
+         (5, 6, 'red')]
+    """
+
+    class_a = _load_data(class_a_dir)
+    class_b = _load_data(class_b_dir)
+    input = _load_data(input_dir)
+
+
+    codebook_a = _k_means(class_a, cluster)
+    codebook_b = _k_means(class_b, cluster)
+
+    result = _nearest_neighbour(codebook_a, codebook_b, input)
+
+    return result

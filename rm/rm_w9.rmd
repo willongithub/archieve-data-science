@@ -1,0 +1,178 @@
+---
+title: "Regression Modelling Lab Week 9"
+output: html_notebook
+---
+
+```{r include = F}
+require(caret)
+require(MASS)
+set.seed(111)
+```
+
+# 1.
+```{r}
+# a)
+trainIndex <- createDataPartition(
+  mtcars$mpg,
+  p = .7,
+  list = F,
+  times = 1)
+head(trainIndex)
+```
+```{r}
+carsTrain <- mtcars[trainIndex,]
+carsTest <- mtcars[-trainIndex,]
+nrow(carsTrain)
+nrow(carsTest)
+```
+```{r}
+# b)
+carLm <- train(
+  mpg ~ .,
+  data = carsTrain,
+  method = 'lm',
+  trControl = trainControl('cv', number = 5))
+carLm
+```
+```{r}
+# c)
+carResult <- predict(carLm, carsTest)
+```
+```{r}
+# d)
+RMSE(carsTest$mpg, carResult)
+R2(carsTest$mpg, carResult)
+MAE(carsTest$mpg, carResult)
+```
+```{r}
+# e)
+carKnn <- train(
+  mpg ~ .,
+  data = carsTrain,
+  method = 'knn',
+  trControl = trainControl('cv', number = 5))
+carKnn
+```
+```{r}
+carResult <- predict(carKnn, carsTest)
+
+RMSE(carsTest$mpg, carResult)
+R2(carsTest$mpg, carResult)
+MAE(carsTest$mpg, carResult)
+```
+```{r}
+# f)
+carTree <- train(
+  mpg ~ .,
+  data = carsTrain,
+  method = 'rpart',  # CART model
+  trControl = trainControl('cv', number = 5))
+carTree
+```
+```{r}
+carResult <- predict(carTree, carsTest)
+
+RMSE(carsTest$mpg, carResult)
+R2(carsTest$mpg, carResult)
+MAE(carsTest$mpg, carResult)
+```
+
+# 2.
+```{r}
+# a)
+?Boston
+
+trainIndex <- createDataPartition(
+  Boston$medv,
+  p = .8,
+  list = F,
+  times = 1)
+head(trainIndex)
+```
+```{r}
+# b)
+bostonTrain <- Boston[trainIndex,]
+bostonTest <- Boston[-trainIndex,]
+nrow(bostonTrain)
+nrow(bostonTest)
+```
+```{r}
+bostonKnn <- train(
+  medv ~ .,
+  data = bostonTrain,
+  method = 'knn',
+  trControl = trainControl('cv', number = 5))
+bostonKnn
+```
+```{r}
+bostonResult <- predict(bostonKnn, bostonTest)
+
+RMSE(bostonTest$medv, bostonResult)
+R2(bostonTest$medv, bostonResult)
+MAE(bostonTest$medv, bostonResult)
+```
+```{r}
+# c)
+bostonTree <- train(
+  medv ~ .,
+  data = bostonTrain,
+  method = 'rpart',
+  trControl = trainControl('cv', number = 5))
+bostonTree
+```
+```{r}
+bostonResult <- predict(bostonTree, bostonTest)
+
+RMSE(bostonTest$medv, bostonResult)
+R2(bostonTest$medv, bostonResult)
+MAE(bostonTest$medv, bostonResult)
+```
+
+# 3.
+```{r}
+# a)
+trainIndex <- createDataPartition(
+  iris$Sepal.Length,
+  p = .75,
+  list = F,
+  times = 1)
+head(trainIndex)
+```
+```{r}
+# b)
+irisTrain <- iris[trainIndex,]
+irisTest <- iris[-trainIndex,]
+nrow(irisTrain)
+nrow(irisTest)
+```
+```{r}
+irisKnn <- train(
+  Sepal.Length ~ .,
+  data = irisTrain,
+  method = 'knn',
+  trControl = trainControl('cv', number = 5))
+irisKnn
+```
+```{r}
+irisTree <- train(
+  Sepal.Length ~ .,
+  data = irisTrain,
+  method = 'rpart',
+  trControl = trainControl('cv', number = 5))
+irisTree
+```
+```{r}
+# c)
+irisResult <- predict(irisKnn, irisTest)
+
+RMSE(irisTest$Sepal.Length, irisResult)
+R2(irisTest$Sepal.Length, irisResult)
+MAE(irisTest$Sepal.Length, irisResult)
+```
+```{r}
+irisResult <- predict(irisTree, irisTest)
+
+RMSE(irisTest$Sepal.Length, irisResult)
+R2(irisTest$Sepal.Length, irisResult)
+MAE(irisTest$Sepal.Length, irisResult)
+```
