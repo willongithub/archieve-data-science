@@ -1,0 +1,133 @@
+---
+title: "Regression Modelling Lab Week 9"
+output: html_notebook
+---
+
+```{r include = F}
+require(caret)
+require(MASS)
+set.seed(11)
+```
+# 1.
+```{r}
+head(Boston)
+nrow(Boston)
+```
+## (a)
+```{r}
+# Split the data
+q1_split <- createDataPartition(
+  Boston$medv,
+  p = .7,
+  list = F)
+
+q1_train <- Boston[q1_split,]
+q1_test <- Boston[-q1_split,]
+nrow(q1_train)
+nrow(q1_test)
+```
+## (b)
+```{r}
+# Random forest model
+tune <- expand.grid(mtry = (1:35))
+q1_rf_model <- train(medv ~ .,
+                     data = q1_train,
+                     method = "rf",
+                     trControl = trainControl("cv", number = 10),
+                     ntree = 10,
+                     tuneGrid = tune,
+                     importance = T)
+plot(varImp(q1_rf_model))
+```
+```{r include = F}
+# XGboost model
+q1_xgb_model <- train(medv ~ .,
+                      data = q1_train,
+                      method = "xgbTree",
+                      objective = "reg:squarederror",
+                      trControl = trainControl("cv", number = 10))
+```
+## (c)
+```{r}
+# Predict
+q1_rt_pred <- predict(q1_rf_model, q1_test)
+q1_xgb_pred <- predict(q1_xgb_model, q1_test)
+```
+```{r}
+q1_rt_metric <- data.frame(
+  "RMSE" = RMSE(q1_rt_pred, q1_test$medv),
+  "R^2" = R2(q1_rt_pred, q1_test$medv),
+  "MAE" = MAE(q1_rt_pred, q1_test$medv)
+)
+print("Random Forest:")
+print(q1_rt_metric)
+```
+```{r}
+q1_xgb_metric <- data.frame(
+  "RMSE" = RMSE(q1_xgb_pred, q1_test$medv),
+  "R^2" = R2(q1_xgb_pred, q1_test$medv),
+  "MAE" = MAE(q1_xgb_pred, q1_test$medv)
+)
+print("XGBoost:")
+print(q1_xgb_metric)
+```
+# 2.
+```{r include = F}
+require(mlbench)
+```
+```{r}
+data(Soybean)
+head(Soybean)
+nrow(Soybean)
+levels(Soybean$Class)
+```
+## (a)
+```{r}
+# Split the data
+q2_data <- na.omit(Soybean)
+# nrow(data)
+q2_data <- droplevels(q2_data)
+# nrow(data)
+q2_split <- createDataPartition(
+  q2_data$Class,
+  p = .8,
+  list = F)
+
+q2_train <- q2_data[q2_split,]
+q2_test <- q2_data[-q2_split,]
+nrow(q2_train)
+nrow(q2_test)
+```
+## (b)
+```{r}
+tune <- expand.grid(mtry = (1:35))
+q2_model <- train(Class ~ .,
+                  data = q2_train,
+                  method = "rf",
+                  trControl = trainControl("cv", number = 10),
+                  ntree = 10,
+                  tuneGrid = tune,
+                  importance = T)
+summary(q2_model)
+```
+```{r}
+# Predict
+q2_pred <- predict(q2_model, q2_test)
+summary(q2_pred)
+```
+```{r}
+# q2_metric <- data.frame(
+#   "RMSE" = RMSE(q2_pred, q2_test$Class),
+#   "R^2" = R2(q2_pred, q2_test$Class),
+#   "MAE" = MAE(q2_pred, q2_test$Class)
+# )
+# print("Random Forest:")
+# print(q2_metric)
+q2_result <- q2_pred == q2_test$Class
+mean(q2_result)
+table(q2_pred, q2_test$Class)
+```
+## (c)
+```{r}
+plot(varImp(q2_model))
+```
