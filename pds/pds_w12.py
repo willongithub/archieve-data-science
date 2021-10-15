@@ -116,27 +116,32 @@ button_3.place(x=20, y=150)
 window.mainloop()
 
 # %%
-from sklearn import datasets, neighbours, mixture, metrics, svm
-from sklearn.model_selection import train_test_split
+from sklearn import datasets, neighbors, mixture, metrics, svm
+from sklearn.model_selection import train_test_split, GridSearchCV
 import matplotlib.pyplot as plt
 import numpy as np
 
 # %%
-dataset_iris = datasets.iris()
+dataset_iris = datasets.load_iris()
 
 # %%
-def train_model(dataset, size, ):
+def train_model(dataset, size, classifier='knn'):
     X = dataset.data
     y = dataset.target
     names = dataset_iris.target_names
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=size, random_state=14)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=size, random_state=0)
 
-    param = [{'n_neighbours: ': [1, 2, 3, 4, 5, 6]}]
-    knn = neighbours.KNeighborsClassifier()
+    if classifier == 'knn':
+        estimator = neighbors.KNeighborsClassifier()
+        param = [{'n_neighbors': [1, 2, 3, 4, 5, 6]}]
+    elif classifier == 'svm':
+        estimator = svm.SVC()
+        param = [{'gamma': [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0]}]
 
     gscv = GridSearchCV(
-        estimator = knn,
+        estimator = estimator,
         param_grid = param,
         cv = 5,
         scoring = 'accuracy'
@@ -148,6 +153,7 @@ def train_model(dataset, size, ):
     means = gscv.cv_results_['mean_test_score']
     stds = gscv.cv_results_['std_test_score']
     results = gscv.cv_results_['params']
+
     for mean, std, param in zip(means, stds, results):
         print("Parameter: %r, accuracy: %0.3f (+/-%0.03f)"% (param, mean, std*2))
     print(f'\nBest parameter: {gscv.best_params_}')
@@ -155,13 +161,18 @@ def train_model(dataset, size, ):
     y_pred= gscv.predict(X_test)
 
     accuracy = metrics.accuracy_score(y_test, y_pred) * 100
-    plotcm = metrics.plot_confusion_matrix(gscv, X_test, y_test, display_labels=names)
+    # plotcm = metrics.plot_confusion_matrix(gscv, X_test, y_test, display_labels=names)
+    plotcm = metrics.ConfusionMatrixDisplay.from_estimator(gscv, X_test, y_test, display_labels=names)
     plotcm.ax_.set_title('Accuracy = {0:.2f}%'.format(accuracy))
-    plt.show()
+    # plt.show()
 
 # %%
 train_model(dataset_iris, 0.3)
+
+# %%
 train_model(dataset_iris, 0.25)
+
+# %%
 train_model(dataset_iris, 0.2)
 
 # %%
@@ -170,10 +181,61 @@ dataset_wine = datasets.load_wine()
 
 # %%
 train_model(dataset_breast_cancer, 0.25)
+
+# %%
 train_model(dataset_wine, 0.25)
 
 # %%
 # Question 1
+train_model(dataset_wine, 0.3, 'svm')
+
+# %%
+train_model(dataset_iris, 0.3, 'svm')
 
 # %%
 # Question 2
+class Computer:
+    brand = 'default'
+
+    def __init__(self, md='new', hd='new') -> None:
+        self.model = md
+        self.harddisk = hd
+
+    def change_model(self, md):
+        self.model = md
+    
+    def change_harddisk(self, hd):
+        self.harddisk = hd
+
+    @classmethod
+    def change_brand(cls, bd):
+        cls.brand = bd
+
+# %%
+# init default objects
+c1 = Computer()
+print('c1: ' + c1.brand + ' ' + c1.model + ' ' + c1.harddisk)
+c2 = Computer()
+print('c2: ' + c2.brand + ' ' + c2.model + ' ' + c2.harddisk)
+
+# %%
+# set member value
+c1 = Computer('air', '256')
+print('c1: ' + c1.brand + ' ' + c1.model + ' ' + c1.harddisk)
+c2 = Computer('pro', '512')
+print('c2: ' + c2.brand + ' ' + c2.model + ' ' + c2.harddisk)
+
+# %%
+# object method
+c1.change_model('iMac')
+print('c1: ' + c1.brand + ' ' + c1.model + ' ' + c1.harddisk)
+c2.change_harddisk('1T')
+print('c2: ' + c2.brand + ' ' + c2.model + ' ' + c2.harddisk)
+
+# %%
+# class method
+c1.change_brand('Pingguo')
+print('c1: ' + c1.brand + ' ' + c1.model + ' ' + c1.harddisk)
+print('c2: ' + c2.brand + ' ' + c2.model + ' ' + c2.harddisk)
+
+# %%
