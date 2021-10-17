@@ -1,0 +1,20 @@
+<head>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://unpkg.com/aframe-charts-component/dist/aframe-charts-component.min.js"></script>
+</head>
+<body>
+    <a-scene background="color: #FAFAFA" embedded arjs>
+        <a-asset>
+            <a-asset-item id="data" src='[
+                {"x": 1, "y": 2, "z": 0, "size": 1, "color": "#ff0000"},
+                {"x": -2, "y": 1, "z": 1, "size": 1, "color": "#00ff00"},
+                {"x": -1, "y": 1, "z": 2, "size": 1, "color": "#0000ff"},
+                {"x": 2, "y": 3, "z": -3, "size": 1, "color": "#0000ff"},
+                {"x": 1, "y": 2.5, "z": 3, "size": 1, "color": "#4CC3D9"}]'>
+            </a-asset-item>
+        </a-asset>
+        <a-entity charts="type: bar; dataPoints: #data; axis_length: 4"></a-entity>
+        <a-marker-camera preset='kanji'></a-marker-camera> 
+    </a-scene>
+</body>
