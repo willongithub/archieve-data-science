@@ -55,7 +55,7 @@ y_pred = grid_search.predict(X_test)
 print(metrics.classification_report(y_test, y_pred,
                                     target_names=dataset.target_names))
 
-cm = metrics.confusion_matrix(y_test, y_predicted)
+cm = metrics.confusion_matrix(y_test, y_pred)
 print(cm)
 
 plt.matshow(cm)
