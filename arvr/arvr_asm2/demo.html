@@ -4,32 +4,44 @@
         <meta charset="utf-8">
         <title>Demo</title>
         <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-        <script src="https://unpkg.com/aframe-environment-component@1.2.0/dist/aframe-environment-component.min.js"></script>
+        <!-- <script src="https://unpkg.com/aframe-environment-component@1.2.0/dist/aframe-environment-component.min.js"></script> -->
         <script src="https://unpkg.com/aframe-charts-component/dist/aframe-charts-component.min.js"></script>
     </head>
     <body>
 
         <a-scene background="color: grey" cursor="rayOrigin:mouse"> <!-- Cursor mouse clickable. -->
-            <a-light type="point" intensity="1" position="-2 10 10"></a-light>
 
-            <a-entity id="barId" charts="type: bar; dataPoints: ../data/demo.json" position="20 2 20" rotation="0 0 0"></a-entity>
+            <a-light type="point" intensity="1" position="0 20 30"></a-light>
 
-            <a-light type="point" intensity="0.7" position="1 30 30"></a-light>
+            <a-assets>
+                <!-- ... -->
+                <img id="skyDome" src="data/central-park.jpeg">
+                <img id="mapPlane" src="data/map_of_cbr.svg" width="10000" height="10000">
+                <!-- ... -->
+            </a-assets>
 
-            <a-entity position="1 5 20" charts='type: totem;  entity_id_list: barId;
-                dataPoints_list: {"Bruce": "../data/bruce.json", "Dickson": "../data/Dickson.json","Gungahlin": "../data/Gungahlin.json"}'>
-            </a-entity>
+            <!-- Declaring chart component -->
+            <a-entity charts="dataPoints: ../data/data_demo.json; type: bar; axis_color: green; axis_length: 10; axis_negative: true; axis_grid: true; axis_text_color: black; show_legend_info: true; show_legend_position: -5 20 10"></a-entity>
+            <a-entity charts="type: pie; dataPoints: ../data/data_pie_demo.json; pie_radius: 10; show_legend_info: true; show_legend_position: 30 20 5" position="30 0 10"></a-entity>
 
-            <a-entity movement-controls="fly: true" position="0 0 30" rotation="0 0 0"> <!-- Camera fly movement. -->
+            <a-entity charts="dataPoints: ../data/data_by_year.json; type: bar; axis_color: green; axis_grid: true; axis_text_color: black; show_legend_info: true; show_legend_position: -30 20 10" position="-50 0 10"></a-entity>
+              
+            <!-- ... -->
+            <a-plane src="#mapPlane" rotation="-90 0 0" width="200" height="200"></a-plane>
+            <!-- ... -->
 
-                <a-entity position="2 5 15" rotation="0 0 0">
-                    <a-camera position="0 -1 4" rotation="0 0 0">
-                        <!-- <a-cursor></a-cursor> -->
-                    </a-camera>
+            <a-sky src="#skyDome"></a-sky>
+
+            <!-- <a-entity movement-controls="fly: true" position="0 0 30" rotation="0 0 0"> Camera fly movement. -->
+
+            <a-entity position="0 20 30" rotation="0 0 0">
+                <a-camera position="0 -1 4" rotation="0 0 0">
+                    <a-cursor></a-cursor>
+                </a-camera>
                 <a-entity laser-controls="hand: right"></a-entity> <!-- Control for Oculus. -->
             </a-entity>
 
-            <a-entity environment="preset: forest; dressingAmount: 500"></a-entity>
+            <!-- <a-entity environment="preset: forest; dressingAmount: 500"></a-entity> -->
             
         </a-scene>
 
