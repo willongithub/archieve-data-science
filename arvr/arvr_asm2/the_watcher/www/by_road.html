@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Demo</title>
+        <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+        <script src="https://unpkg.com/aframe-charts-component/dist/aframe-charts-component.min.js"></script>
+    </head>
+    <body>
+
+        <a-scene background="color: grey" cursor="rayOrigin:mouse"> <!-- Cursor mouse clickable. -->
+
+            <a-light type="ambient" intensity="0.5"></a-light>
+            <a-light type="point" intensity="0.5" position="-2 500 30"></a-light>
+            <!-- <a-entity light="type: directional; color: #EEE; intensity: 0.3" position="0 1 -1"></a-entity> -->
+
+            <a-assets>
+                <img id="mapPlane" src="assets/map_of_cbr.svg" width="10240" height="10240">
+                <a-asset-item id="overwatchObj" src="assets/lego.obj"></a-asset-item>
+            </a-assets>
+
+            <a-entity id="roadId"
+                charts="dataPoints: ../data/data_good dry surface.json;
+                type: cylinder; axis_visible: false; show_legend_info: false;
+                show_legend_title: Cases by Road; show_legend_position: 10 200 -20">
+            </a-entity>
+
+            <a-entity charts='type: totem; entity_id_list: roadId;
+                dataPoints_list: {
+                    "Good dry surface": "../data/data_good dry surface.json",
+                    "Wet surface": "../data/data_wet surface.json",
+                    "Loose surface": "../data/data_loose surface.json",
+                    "Snow or ice": "../data/data_snow or ice.json",
+                    "Muddy or oily surface": "../data/data_muddy or oily surface.json"
+                }' position="0 100 -10">
+            </a-entity>
+
+            <a-entity movement-controls="fly: true; speed: 30" position="0 200 0" rotation="0 0 0">
+
+                <a-camera position="0 0 0" rotation="0 0 0">
+                    <!-- <a-cursor></a-cursor> -->
+                </a-camera>
+                <a-entity laser-controls="hand: right"></a-entity> <!-- Control for Oculus. -->
+            </a-entity>
+
+            <a-entity obj-model="obj: #overwatchObj" position="300 0 0" rotation="0 -90 0"></a-entity>
+            
+            <a-plane src="#mapPlane" rotation="-90 0 0" width="1362" height="1394"></a-plane>
+            
+
+        </a-scene>
+
+    </body>
+</html>
