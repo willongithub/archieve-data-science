@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Demo</title>
+        <title>Cases by Crash Severity</title>
         <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
         <script src="https://unpkg.com/aframe-charts-component/dist/aframe-charts-component.min.js"></script>
     </head>
@@ -19,16 +19,17 @@
                 <a-asset-item id="overwatchObj" src="assets/lego.obj"></a-asset-item>
             </a-assets>
 
-            <a-entity id="suburbId"
-                charts="dataPoints: assets/data_verbose.json;
+            <a-entity id="severityId"
+                charts="dataPoints: assets/data_gdds.json;
                 type: cylinder; axis_visible: false; show_legend_info: false;
-                show_legend_title: Cases by Suburb; show_legend_position: 10 200 -20">
+                show_legend_title: Cases by Severity; show_legend_position: 10 200 -20">
             </a-entity>
 
-            <a-entity charts='type: totem; entity_id_list: suburbId;
+            <a-entity charts='type: totem; entity_id_list: severityId;
                 dataPoints_list: {
-                    "Reduced": "assets/data_reduced.json",
-                    "Verbose": "assets/data_verbose.json"
+                    "Fatal": "assets/data_fatl.json",
+                    "Injury": "assets/data_injr.json",
+                    "Property Damage Only": "assets/data_prdo.json"
                 }' position="0 100 -10">
             </a-entity>
 
@@ -41,7 +42,7 @@
                 <a-entity laser-controls="hand: right"></a-entity> <!-- Control for Oculus. -->
             </a-entity>
 
-            <a-entity obj-model="obj: #overwatchObj" position="300 0 0" rotation="0 -90 0"></a-entity>
+            <a-entity obj-model="obj: #overwatchObj" position="300 0 0" rotation="0 -90 0" scale="2 2 2"></a-entity>
             
             <a-plane src="#mapPlane" rotation="-90 0 0" width="1362" height="1394"></a-plane>
             

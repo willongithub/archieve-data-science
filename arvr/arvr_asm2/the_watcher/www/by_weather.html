@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Demo</title>
+        <title>Cases by Weather Condition</title>
         <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
         <script src="https://unpkg.com/aframe-charts-component/dist/aframe-charts-component.min.js"></script>
     </head>
@@ -19,22 +19,22 @@
                 <a-asset-item id="overwatchObj" src="assets/lego.obj"></a-asset-item>
             </a-assets>
 
-            <a-entity id="weatherId"
-                charts="dataPoints: ../data/data_fine.json;
+            <a-entity id="wethrId"
+                charts="dataPoints: assets/data_fine.json;
                 type: cylinder; axis_visible: false; show_legend_info: false;
                 show_legend_title: Cases by Weather; show_legend_position: 10 200 -20">
             </a-entity>
 
-            <a-entity charts='type: totem; entity_id_list: weatherId;
+            <a-entity charts='type: totem; entity_id_list: wethrId;
                 dataPoints_list: {
-                    "Fine": "../data/data_fine.json",
-                    "Cloudy or Overcast": "../data/data_cloudy or overcast.json",
-                    "Light rain": "../data/data_light rain.json",
-                    "Fog": "../data/data_fog.json",
-                    "Snow or sleet": "../data/data_snow or sleet.json",
-                    "Heavy rain": "../data/data_heavy rain.json",
-                    "Smoke or dust": "../data/data_smoke or dust.json",
-                    "Other": "../data/data_other.json"
+                    "Fine": "assets/data_fine.json",
+                    "Cloudy or Overcast": "assets/data_cloo.json",
+                    "Light rain": "assets/data_lghr.json",
+                    "Fog": "assets/data_fog.json",
+                    "Snow or sleet": "assets/data_snos.json",
+                    "Heavy rain": "assets/data_hvyr.json",
+                    "Smoke or dust": "assets/data_smod.json",
+                    "Other": "assets/data_othr.json"
                 }' position="0 100 -10">
             </a-entity>
 
@@ -46,7 +46,7 @@
                 <a-entity laser-controls="hand: right"></a-entity> <!-- Control for Oculus. -->
             </a-entity>
 
-            <a-entity obj-model="obj: #overwatchObj" position="300 0 0" rotation="0 -90 0"></a-entity>
+            <a-entity obj-model="obj: #overwatchObj" position="300 0 0" rotation="0 -90 0" scale="2 2 2"></a-entity>
             
             <a-plane src="#mapPlane" rotation="-90 0 0" width="1362" height="1394"></a-plane>
             

@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Cases by Lighting Condition</title>
+        <title>Cases by Year</title>
         <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
         <script src="https://unpkg.com/aframe-charts-component/dist/aframe-charts-component.min.js"></script>
     </head>
@@ -19,21 +19,27 @@
                 <a-asset-item id="overwatchObj" src="assets/lego.obj"></a-asset-item>
             </a-assets>
 
-            <a-entity id="lightingId"
-                charts="dataPoints: assets/data_dylg.json;
+            <a-entity id="yrId"
+                charts="dataPoints: assets/data_2021.json;
                 type: cylinder; axis_visible: false; show_legend_info: false;
-                show_legend_title: Cases by Lighting; show_legend_position: 10 200 -20">
+                show_legend_title: Cases by Year; show_legend_position: 10 200 -20">
             </a-entity>
 
-            <a-entity charts='type: totem; entity_id_list: lightingId;
+            <a-entity charts='type: totem; entity_id_list: yrId;
                 dataPoints_list: {
-                    "Daylight": "assets/data_dylg.json",
-                    "Dark - poor street lighting": "assets/data_d_psl.json",
-                    "Dark - good street lighting": "assets/data_d_gsl.json",
-                    "Dark - no street lights": "assets/data_d_nsl.json",
-                    "Semi-darkness": "assets/data_sm_d.json"
+                    "2012": "assets/data_2012.json",
+                    "2013": "assets/data_2013.json",
+                    "2014": "assets/data_2014.json",
+                    "2015": "assets/data_2015.json",
+                    "2016": "assets/data_2016.json",
+                    "2017": "assets/data_2017.json",
+                    "2018": "assets/data_2018.json",
+                    "2019": "assets/data_2019.json",
+                    "2020": "assets/data_2020.json",
+                    "2021": "assets/data_2021.json"
                 }' position="0 100 -10">
             </a-entity>
+
 
             <a-entity movement-controls="fly: true; speed: 30" position="0 200 0" rotation="0 0 0">
 

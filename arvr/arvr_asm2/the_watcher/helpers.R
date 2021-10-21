@@ -1,10 +1,13 @@
-require(dplyr)
+require(tidyverse)
 require(lubridate)
 require(mapdeck)
 require(jsonlite)
 
 # Load dataset ----
 data <- read_csv("data/ACT_Road_Crash_Data.csv")
+
+# Mdified dataset for plot
+act_crash <- data
 
 # Heatmap ----
 key <- 'pk.eyJ1IjoianVhbmd1YXJpbm8iLCJhIjoiY2t1eGkwbXd5MXlrbjJ3bnlqZmhuY2NjYSJ9.UGZHYXMuS4HM7KMvK9_MSQ'
@@ -29,25 +32,85 @@ heatmap <- mapdeck(
     update_view = F,
 )
 
-# Exploratory Page
-get_exploratory_plot <- function(year, column) {
-    data_exp <- data %>%
-        mutate(
-            CRASH_DATE = dmy(CRASH_DATE),
-            YEAR = year(CRASH_DATE)
-        ) %>%
-        filter(YEAR == year) %>%
-        group_by(across({{column}})) %>%
-        summarise(COUNT = n())
+# Trend Line Page
+act_crash$CRASH_TIME <-
+    strptime(act_crash$CRASH_TIME, format = "%H:%M") %>%  hour()
 
-    data_exp %>%
-        ggplot(aes(x = get(column), y = COUNT, fill = get(column))) +
-            geom_bar(stat = "identity", width = 0.3) +
-            geom_text(aes(label = COUNT), vjust = -0.5) +
-            ggtitle(paste("Crash by", tolower(column), "in", year)) +
-            # scale_fill_distiller(palette = "Reds", direction = 1) +
-            theme_gray()
+act_crash_hour <-
+    setNames(data.frame(table(act_crash$CRASH_TIME)),
+    c("Time", "Count"))
+
+act_crash$Year <-
+    strptime(act_crash$CRASH_DATE, format = "%Y-%m-%d") %>%  year()
+
+# act_crash_year <-
+#     setNames(data.frame(table(act_crash$Year)),
+#     c("Date", "Count"))
+
+get_trend_plot <- function(interval, column) {
+    if (interval == "Hourly") {
+        ggplot(act_crash_hour, aes(x = Time, y = Count)) +
+        geom_line(color = "#287D8EFF", group = 1)+
+        geom_point() +
+        theme_minimal() +
+        theme(plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
+            axis.title.x = element_text(size = 10, hjust = 0.5, face = 'bold'),
+            axis.text.x = element_text(size = 8),
+            axis.title.y = element_text(size = 10, hjust = 0.5, vjust = 1, face = 'bold'),
+            axis.text.y = element_text(size = 8),
+            axis.line.x = element_line(color='black', size=1),
+            legend.position = 'none',
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank()
+        )+
+        scale_fill_viridis_d()+
+        labs(x = 'Hour',
+             y= 'Number of Crashes',
+             title = 'Hourly - ACT Crashes'
+        )
+    }
+    else {
+        ggplot(act_crash_year, aes(x=Date, y=Count))+
+        geom_line(color='#287D8EFF',group=1)+
+        geom_point()+
+        theme_fivethirtyeight()+
+        theme(plot.title = element_text(size = 12, face = 'bold', hjust = 0.5),
+              axis.title.x = element_text(size = 10, hjust = 0.5, face = 'bold'),
+              axis.text.x = element_text(size = 8),
+              axis.title.y = element_text(size = 10, hjust = 0.5, vjust = 1, face = 'bold'),
+              axis.text.y = element_text(size = 8),
+              axis.line.x = element_line(color='black', size=1),
+              legend.position = 'none',
+              panel.grid.major = element_blank(), 
+              panel.grid.minor = element_blank()
+        )+
+        scale_fill_viridis_d()+
+        labs(x = 'Suburbs',
+             y= 'Number of Crashes',
+             title = 'Years - ACT Crashes'
+        )
+    }
 }
+
+# # Exploratory Page
+# get_exploratory_plot <- function(year, column) {
+#     data_exp <- data %>%
+#         mutate(
+#             CRASH_DATE = dmy(CRASH_DATE),
+#             YEAR = year(CRASH_DATE)
+#         ) %>%
+#         filter(YEAR == year) %>%
+#         group_by(across({{column}})) %>%
+#         summarise(COUNT = n())
+
+#     data_exp %>%
+#         ggplot(aes(x = get(column), y = COUNT, fill = get(column))) +
+#             geom_bar(stat = "identity", width = 0.3) +
+#             geom_text(aes(label = COUNT), vjust = -0.5) +
+#             ggtitle(paste("Crash by", tolower(column), "in", year)) +
+#             # scale_fill_distiller(palette = "Reds", direction = 1) +
+#             theme_gray()
+# }
 
 # Year Page
 get_year_plot <- function(year) {
@@ -145,8 +208,81 @@ longitude_conversion <- function(longitude) {
 }
 
 # Group suburb into residential districts
-to_residential_district <- function() {
+to_residential_district <- function(dataset) {
+    # Group data by Residential District
+    data_canberra_central <- dataset %>%
+        filter(SUBURB_LOCATION %in% toupper(canberra_central)) %>%
+        mutate(
+            CRASH_DATE = dmy(CRASH_DATE),
+            SUBURB_LOCATION = "CANBERRA CENTRAL",
+            LONGITUDE = 149.1287,
+            LATITUDE = -35.2822
+        )
 
+    data_woden_valley <- dataset %>%
+        filter(SUBURB_LOCATION %in% toupper(woden_valley)) %>%
+        mutate(
+            CRASH_DATE = dmy(CRASH_DATE),
+            SUBURB_LOCATION = "WODEN VALLEY",
+            LONGITUDE = 149.0950,
+            LATITUDE = -35.3452
+        )
+
+    data_belconnen <- dataset %>%
+        filter(SUBURB_LOCATION %in% toupper(belconnen)) %>%
+        mutate(
+            CRASH_DATE = dmy(CRASH_DATE),
+            SUBURB_LOCATION = "BELCONNEN",
+            LONGITUDE = 149.0661,
+            LATITUDE = -35.2386
+        )
+
+    data_weston_creek <- dataset %>%
+        filter(SUBURB_LOCATION %in% toupper(weston_creek)) %>%
+        mutate(
+            CRASH_DATE = dmy(CRASH_DATE),
+            SUBURB_LOCATION = "WESTON CREEK",
+            LONGITUDE = 149.0340,
+            LATITUDE = -35.2974
+        )
+
+    data_tuggeranong <- dataset %>%
+        filter(SUBURB_LOCATION %in% toupper(tuggeranong)) %>%
+        mutate(
+            CRASH_DATE = dmy(CRASH_DATE),
+            SUBURB_LOCATION = "TUGGERANONG",
+            LONGITUDE = 149.0888,
+            LATITUDE = -35.4244
+        )
+
+    data_gungahlin <- dataset %>%
+        filter(SUBURB_LOCATION %in% toupper(gungahlin)) %>%
+        mutate(
+            CRASH_DATE = dmy(CRASH_DATE),
+            SUBURB_LOCATION = "GUNGAHLIN",
+            LONGITUDE = 149.1330,
+            LATITUDE = -35.1831
+        )
+
+    data_molonglo_valley <- dataset %>%
+        filter(SUBURB_LOCATION %in% toupper(molonglo_valley)) %>%
+        mutate(
+            CRASH_DATE = dmy(CRASH_DATE),
+            SUBURB_LOCATION = "MOLONGLO VALLEY",
+            LONGITUDE = 149.0642,
+            LATITUDE = -35.2861
+        )
+
+    data_rd <- rbind(
+        data_canberra_central,
+        data_woden_valley,
+        data_belconnen,
+        data_weston_creek,
+        data_tuggeranong,
+        data_gungahlin,
+        data_molonglo_valley
+    )
+    return(data_rd)
 }
 
 # Dataset of conditions
@@ -180,19 +316,18 @@ get_condition_json <- function(dataset, condition) {
             prettify(indent = 4)
 
         identifier <- tolower(gsub("-", "_", abbreviate(conditions[i])))
-        dir <- paste0("the_watcher/www/assets/data_", identifier, ".json")
+        dir <- paste0("www/assets/data_", identifier, ".json")
         write(dataset_json, dir)
     }
 }
 
 # Dataset in terms of suburbs/residential district
-get_suburb_json <- function(dataset) {
+get_severity_json <- function(dataset) {
     conditions <- unique(dataset$CRASH_SEVERITY)
 
     for (i in seq_len(length(conditions))) {
         dataset_grouped <- dataset %>%
-            filter(CRASH_SEVERITY == conditions[i],
-                CRASH_SEVERITY != "Property Damage Only") %>%
+            filter(CRASH_SEVERITY == conditions[i]) %>%
             group_by(SUBURB_LOCATION) %>%
             summarise(
                 COUNT = n(),
@@ -216,29 +351,58 @@ get_suburb_json <- function(dataset) {
             prettify(indent = 4)
 
         identifier <- tolower(gsub("-", "_", abbreviate(conditions[i])))
-        dir <- paste0("the_watcher/www/assets/data_", identifier, ".json")
+        dir <- paste0("www/assets/data_", identifier, ".json")
         write(dataset_json, dir)
     }
 }
 
 # Dataset by year
-get_year_json <- function() {
-    for (i in seq_len(length(conditions))) {
+get_year_json <- function(dataset) {
+    for (i in 12:21) {
+        year <- 2000 + i
+        dataset_grouped <- dataset %>%
+            filter(year(CRASH_DATE) == year,
+                CRASH_SEVERITY != "Property Damage Only") %>%
+            select(LONGITUDE, LATITUDE, SUBURB_LOCATION) %>%
+            mutate(
+                LONGITUDE = longitude_conversion(LONGITUDE),
+                LATITUDE = latitude_conversion(LATITUDE)
+            ) %>%
+            group_by(SUBURB_LOCATION) %>%
+            summarise(
+                COUNT = n(),
+                LONGITUDE = mean(LONGITUDE),
+                LATITUDE = mean(LATITUDE)
+            )
 
+        dataset_json <- dataset_grouped %>%
+            rename(c(x = LONGITUDE, z = LATITUDE)) %>%
+            mutate(
+                y = COUNT,
+                size = sqrt(COUNT),
+                color = color[sample(seq_len(length(color)), 1)],
+                label = paste(SUBURB_LOCATION)
+            ) %>%
+            toJSON(dataframe = "rows") %>%
+            prettify(indent = 4)
+
+        dir <- paste0("www/assets/data_", year, ".json")
+        write(dataset_json, dir)
     }
-
-    identifier <- tolower(gsub("-", "_", abbreviate(conditions[i])))
-    dir <- paste0("the_watcher/www/assets/data_", identifier, ".json")
-    write(dataset_json, dir)
 }
 
 # Generate JSON dataset
-get_json <- function(dataset, verbose = T) {
+get_json <- function(verbose) {
+    verbose <- as.logical(verbose)
     if (!verbose) {
-        dataset <- to_residential_district(dataset)
+        dataset <- to_residential_district(data)
+    }
+    else {
+        dataset <- data
     }
 
-    get_suburb_json(dataset)
+    get_year_json(dataset)
+    get_severity_json(dataset)
     get_condition_json(dataset, "WEATHER_CONDITION")
     get_condition_json(dataset, "LIGHTING_CONDITION")
     get_condition_json(dataset, "ROAD_CONDITION")
