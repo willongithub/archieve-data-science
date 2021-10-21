@@ -3,148 +3,148 @@ require(lubridate)
 require(mapdeck)
 require(jsonlite)
 
-# Load dataset ----
+# Load dataset
 data <- read_csv("data/ACT_Road_Crash_Data.csv")
 
-# Mdified dataset for plot
-act_crash <- data
-
-# Heatmap ----
-key <- 'pk.eyJ1IjoianVhbmd1YXJpbm8iLCJhIjoiY2t1eGkwbXd5MXlrbjJ3bnlqZmhuY2NjYSJ9.UGZHYXMuS4HM7KMvK9_MSQ'
+# Map Page
+key <- paste("pk.eyJ1IjoianVhbmd1YXJpbm8iLCJhIjoiY2t1eGk",
+             "wbXd5MXlrbjJ3bnlqZmhuY2NjYSJ9.UGZHYXMuS4HM",
+             "7KMvK9_MSQ", sep = "")
 set_token(key)
 
-heatmap <- mapdeck(
-  style = mapdeck_style("dark"),
-  pitch = 30,
-  zoom = 9,
-  location = c(149.12, -35.28)) %>%
-  add_hexagon(
-    data = data,
-    lat = "LATITUDE",
-    lon = "LONGITUDE",
-    layer_id = "hex_layer",
-    elevation_scale = 15,
-    radius = 500,
-    colour_range = colourvalues::colour_values(
-        1:6, palette = colourvalues::get_palette("ylorrd")),
-    legend = TRUE,
-    auto_highlight = TRUE,
-    update_view = F,
+get_map <-
+    mapdeck(
+        style = mapdeck_style("dark"),
+        pitch = 30,
+        zoom = 9,
+        location = c(149.12, -35.28)) %>%
+        add_hexagon(
+            data = data,
+            lat = "LATITUDE",
+            lon = "LONGITUDE",
+            layer_id = "hex_layer",
+            elevation_scale = 15,
+            radius = 500,
+            colour_range = colourvalues::colour_values(
+                1:6, palette = colourvalues::get_palette("ylorrd")),
+            legend = TRUE,
+            auto_highlight = TRUE,
+            update_view = F,
 )
 
+# Constructe dataset different timeslot
+data["date"] <-
+    parse_date_time(data$CRASH_DATE, orders = c("dmy"))
+
+data["Yearly"] <-
+    strptime(data$date, format = "%Y-%m-%d") %>% year()
+
+data["Monthly"] <-
+    strptime(data$date, format = "%Y-%m-%d") %>% month()
+
+data["Weekly"] <-
+    strptime(data$date, format = "%Y-%m-%d") %>% weekdays()
+
+data["Hourly"] <-
+    strptime(data$CRASH_TIME, format = "%H:%M") %>% hour()
+
 # Trend Line Page
-act_crash$CRASH_TIME <-
-    strptime(act_crash$CRASH_TIME, format = "%H:%M") %>%  hour()
+get_trend_plot <- function(interval) {
+    dataset <-
+        setNames(data.frame(table(data[interval])), c("Interval", "Count"))
 
-act_crash_hour <-
-    setNames(data.frame(table(act_crash$CRASH_TIME)),
-    c("Time", "Count"))
-
-act_crash$Year <-
-    strptime(act_crash$CRASH_DATE, format = "%Y-%m-%d") %>%  year()
-
-# act_crash_year <-
-#     setNames(data.frame(table(act_crash$Year)),
-#     c("Date", "Count"))
-
-get_trend_plot <- function(interval, column) {
-    if (interval == "Hourly") {
-        ggplot(act_crash_hour, aes(x = Time, y = Count)) +
-        geom_line(color = "#287D8EFF", group = 1)+
+    ggplot(dataset, aes(x = Interval, y = Count)) +
+        geom_line(color = "#287D8EFF", group = 1) +
         geom_point() +
         theme_minimal() +
         theme(plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
-            axis.title.x = element_text(size = 10, hjust = 0.5, face = 'bold'),
+            axis.title.x = element_text(size = 10, hjust = 0.5, face = "bold"),
             axis.text.x = element_text(size = 8),
-            axis.title.y = element_text(size = 10, hjust = 0.5, vjust = 1, face = 'bold'),
+            axis.title.y = element_text(
+                size = 10, hjust = 0.5, vjust = 1, face = "bold"),
             axis.text.y = element_text(size = 8),
-            axis.line.x = element_line(color='black', size=1),
-            legend.position = 'none',
+            axis.line.x = element_line(color = "black", size = 1),
+            legend.position = "none",
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank()
-        )+
-        scale_fill_viridis_d()+
-        labs(x = 'Hour',
-             y= 'Number of Crashes',
-             title = 'Hourly - ACT Crashes'
+        ) +
+        scale_fill_viridis_d() +
+        labs(
+            x = interval,
+            y = "Number of Crashes",
+            title = paste(interval, "- ACT Crashes")
         )
-    }
-    else {
-        ggplot(act_crash_year, aes(x=Date, y=Count))+
-        geom_line(color='#287D8EFF',group=1)+
-        geom_point()+
-        theme_fivethirtyeight()+
-        theme(plot.title = element_text(size = 12, face = 'bold', hjust = 0.5),
-              axis.title.x = element_text(size = 10, hjust = 0.5, face = 'bold'),
-              axis.text.x = element_text(size = 8),
-              axis.title.y = element_text(size = 10, hjust = 0.5, vjust = 1, face = 'bold'),
-              axis.text.y = element_text(size = 8),
-              axis.line.x = element_line(color='black', size=1),
-              legend.position = 'none',
-              panel.grid.major = element_blank(), 
-              panel.grid.minor = element_blank()
-        )+
-        scale_fill_viridis_d()+
-        labs(x = 'Suburbs',
-             y= 'Number of Crashes',
-             title = 'Years - ACT Crashes'
-        )
-    }
 }
 
-# # Exploratory Page
-# get_exploratory_plot <- function(year, column) {
-#     data_exp <- data %>%
-#         mutate(
-#             CRASH_DATE = dmy(CRASH_DATE),
-#             YEAR = year(CRASH_DATE)
-#         ) %>%
-#         filter(YEAR == year) %>%
-#         group_by(across({{column}})) %>%
-#         summarise(COUNT = n())
+# Rank Page
+munsell::hue_slice("5P") +
+    annotate(
+        geom = "segment",
+        x = c(7, 7),
+        y = c(1, 10),
+        xend = c(7, 7),
+        yend = c(2, 9),
+        arrow = arrow(length = unit(2, "mm"))
+    )
 
-#     data_exp %>%
-#         ggplot(aes(x = get(column), y = COUNT, fill = get(column))) +
-#             geom_bar(stat = "identity", width = 0.3) +
-#             geom_text(aes(label = COUNT), vjust = -0.5) +
-#             ggtitle(paste("Crash by", tolower(column), "in", year)) +
-#             # scale_fill_distiller(palette = "Reds", direction = 1) +
-#             theme_gray()
-# }
+get_rank_plot <- function(year, num) {
+    top_data <- data %>%
+        group_by(SUBURB_LOCATION) %>%
+        summarise(COUNT = n()) %>%
+        arrange(desc(COUNT)) %>%
+        head(as.numeric(num))
 
-# Year Page
-get_year_plot <- function(year) {
-    data_by_year <- data %>%
-        mutate(
-            CRASH_DATE = dmy(CRASH_DATE),
-            YEAR = year(CRASH_DATE)
-        ) %>%
+    data %>%
+        filter(SUBURB_LOCATION %in% top_data$SUBURB_LOCATION) %>%
+        mutate(CRASH_DATE = dmy(CRASH_DATE)) %>%
+        mutate(YEAR = year(CRASH_DATE)) %>%
         filter(YEAR == year) %>%
-        group_by(CRASH_SEVERITY) %>%
-        summarise(COUNT = n())
+        count(SUBURB_LOCATION) %>%
+        arrange(desc(n)) %>%
 
-    data_by_year %>%
-        ggplot(aes(x = CRASH_SEVERITY, y = COUNT, fill = CRASH_SEVERITY)) +
-            geom_bar(stat = "identity", width = 0.3) +
-            geom_text(aes(label = COUNT), vjust = -0.5) +
-            ggtitle(paste("Crash by Year: ", year)) +
-            # scale_fill_distiller(palette = "Reds", direction = 1) +
-            theme_gray()
+        ggplot(aes(x = reorder(SUBURB_LOCATION, n), y = n, label = n)) +
+            geom_bar(stat = "identity", fill = "#5b2c60") +
+            theme_minimal() +
+            geom_text(size = 4, hjust = 1.5,
+                color = "white", fontface = "bold") +
+            theme(plot.title = element_text(
+                    size = 12, face = "bold", hjust = 0.5),
+                axis.title.x = element_text(
+                    size = 10, hjust = 0.5, face = "bold"),
+                axis.text.x = element_text(size = 8),
+                axis.title.y = element_text(
+                    size = 10, hjust = 0.5, vjust = 1, face = "bold"),
+                axis.text.y = element_text(size = 8),
+                axis.line.x = element_line(color = "black", size = 0.2),
+                legend.position = "none",
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank()
+            ) +
+            coord_flip() +
+            scale_fill_gradient(
+                low = munsell::mnsl("5P 2/12"),
+                high = munsell::mnsl("5P 7/12")
+            ) +
+            labs(
+                x = "Suburbs",
+                y = "Number of Crashes",
+                title = "Top Suburbs - ACT Crashes"
+            )
 }
 
-# Suburb Page
-get_suburb_plot <- function() {
-    data_by_suburb <- data %>%
-        filter(CRASH_SEVERITY != "Property Damage Only") %>%
-        group_by(SUBURB_LOCATION, CRASH_SEVERITY) %>%
-        summarise(COUNT = n())
+# Condition Page
+get_cond_plot <- function(year, suburb, column) {
+    data %>%
+        mutate(CRASH_DATE = dmy(CRASH_DATE)) %>%
+        mutate(YEAR = year(CRASH_DATE)) %>%
+        filter(SUBURB_LOCATION %in% toupper(get(suburb)), YEAR == year) %>%
+        group_by(across({{column}}), CRASH_SEVERITY) %>%
+        summarise(COUNT = n()) %>%
 
-    data_by_suburb %>%
-        ggplot(aes(x = SUBURB_LOCATION, y = COUNT, fill = COUNT)) +
-            geom_bar(stat = "identity", width = 0.3) +
+        ggplot(aes(x = get(column), y = COUNT, fill = CRASH_SEVERITY)) +
+            geom_bar(stat = "identity", position = "dodge") +
             geom_text(aes(label = COUNT), vjust = -0.5) +
-            ggtitle("Crash by Suburb") +
-            scale_fill_distiller(palette = "Reds", direction = 1) +
+            ggtitle("Crash by Conditions") +
             theme_gray()
 }
 

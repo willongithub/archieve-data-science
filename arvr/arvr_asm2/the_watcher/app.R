@@ -1,5 +1,4 @@
-# Load packages ----
-library(shiny)
+require(shiny)
 
 # Source helper functions ----
 source("helpers.R")
@@ -10,12 +9,15 @@ ui <- navbarPage("Traffic OverWatch",
   tabPanel("Overview",
     sidebarLayout(
       sidebarPanel(
-        helpText("Heatmap of crashes:"),
-        # width = 10,
+        width = 2,
+        selectInput(
+          inputId = "map_year",
+          label = "Select a year to inspect:",
+          choices = year_choices,
+        ),
       ),
-
       mainPanel(
-        mapdeckOutput("map_plot", width = "100%", height = "900px"),
+        mapdeckOutput("map_plot", width = "100%", height = "700px"),
       ),
     ),
   ),
@@ -23,68 +25,76 @@ ui <- navbarPage("Traffic OverWatch",
   tabPanel("Trends",
     sidebarLayout(
       sidebarPanel(
-        # width = 10,
+        width = 2,
         selectInput(
-          inputId = "trend_interval_input",
-          label = "Select a time interval to inspect:",
+          inputId = "trend_interval",
+          label = "Select a interval to inspect:",
           choices = c("Hourly",
+                      "Weekly",
+                      "Monthly",
                       "Yearly"),
-        ),
-        selectInput(
-          inputId = "trend_col_input",
-          label = "Select a condition to inspect:",
-          choices = c("Crash Severity",
-                      "Lighting Condition",
-                      "Road Condition",
-                      "Weather Condition"),
         ),
       ),
       mainPanel(
         plotOutput("trend_plot"),
-      )
-    )
-  ),
-
-  tabPanel("Top 10s",
-    sidebarLayout(
-      sidebarPanel(
-        width = 10,
-        helpText("Cases by Year:"),
-        selectInput(
-          inputId = "year_year_input",
-          label = "Select a year to inspect:",
-          choices = year_choices,
-        ),
-      ),
-      mainPanel(
-        plotOutput("top10_plot")
       ),
     ),
   ),
 
-   tabPanel("by Year",
+  tabPanel("Ranks",
     sidebarLayout(
       sidebarPanel(
-        helpText("Cases by Year:"),
+        width = 2,
         selectInput(
-          inputId = "year_year_input",
+          inputId = "rank_num",
+          label = "Select # of suburbs to rank:",
+          choices = c("5", "10", "20"),
+          selected = "10",
+        ),
+        selectInput(
+          inputId = "rank_year",
           label = "Select a year to inspect:",
           choices = year_choices,
+          selected = "2021",
         ),
       ),
       mainPanel(
-        plotOutput("year_plot")
+        plotOutput("rank_plot"),
       ),
     ),
   ),
 
-  tabPanel("by Suburb",
+  tabPanel("Conditions",
     sidebarLayout(
       sidebarPanel(
-        helpText("Cases by Suburb:"),
+        width = 2,
+        selectInput(
+          inputId = "cond_cond",
+          label = "Select a condition to inspect:",
+          choices = c("Lighting Condition",
+                      "Road Condition",
+                      "Weather Condition"),
+        ),
+        selectInput(
+          inputId = "cond_suburb",
+          label = "Select a suburb to inspect:",
+          choices = c("Canberra Central",
+                      "Woden Valley",
+                      "Belconnen",
+                      "Weston Creek",
+                      "Tuggeranong",
+                      "Gungahlin",
+                      "Molonglo Valley"),
+        ),
+        selectInput(
+          inputId = "cond_year",
+          label = "Select a year to inspect:",
+          choices = year_choices,
+          selected = "2020",
+        ),
       ),
       mainPanel(
-        plotOutput("suburb_plot")
+        plotOutput("cond_plot"),
       ),
     ),
   ),
@@ -92,18 +102,18 @@ ui <- navbarPage("Traffic OverWatch",
   tabPanel("VR View",
     sidebarLayout(
       sidebarPanel(
-        width = 10,
+        width = 2,
         radioButtons(
           inputId = "density_selection",
-          label = "Data point density:",
+          label = "Group cases by:",
           choices = c("Suburb" = TRUE,
                       "Residential District" = FALSE),
           selected = TRUE,
         ),
-        verbatimTextOutput("density_output")
+        verbatimTextOutput("density_status"),
       ),
       mainPanel(
-        includeHTML("www/vr_view_list.html"),
+        includeHTML("www/vr_view_list.html")
       ),
     ),
   ),
@@ -118,37 +128,48 @@ ui <- navbarPage("Traffic OverWatch",
 server <- function(input, output) {
 
   data_update <- reactive({
-    get_json(input$density_selection)
+    withProgress(message = "Processing", {
+      get_json(input$density_selection)
+    })
   })
 
   output$map_plot <- renderMapdeck(
-    heatmap, env = parent.frame(), quoted = FALSE)
+    get_map, env = parent.frame(), quoted = FALSE)
 
   output$trend_plot <- renderPlot({
-    column <- switch(input$trend_col_input,
+    get_trend_plot(input$trend_interval)
+  })
+
+  output$rank_plot <- renderPlot({
+    get_rank_plot(input$rank_year, input$rank_num)
+  })
+
+  output$cond_plot <- renderPlot({
+    column <- switch(input$cond_cond,
       "Crash Severity" = "CRASH_SEVERITY",
       "Lighting Condition" = "LIGHTING_CONDITION",
       "Road Condition" = "ROAD_CONDITION",
-      "Weather Condition" = "WEATHER_CONDITION")
-
-    get_trend_plot(input$trend_interval_input, column)
+      "Weather Condition" = "WEATHER_CONDITION"
+    )
+    suburb <- switch(input$cond_suburb,
+      "Canberra Central" = "canberra_central",
+      "Woden Valley" = "woden_valley",
+      "Belconnen" = "belconnen",
+      "Weston Creek" = "weston_creek",
+      "Tuggeranong" = "tuggeranong",
+      "Gungahlin" = "gungahlin",
+      "Molonglo Valley" = "molonglo_valley"
+    )
+    get_cond_plot(input$cond_year, suburb, column)
   })
 
-  output$top10_plot <- renderPlot({
-    # get_top10_plot()
-  })
-
-  output$year_plot <- renderPlot({
-    get_year_plot(input$year_year_input)
-  })
-
-  output$suburb_plot <- renderPlot({
-    get_suburb_plot()
-  })
-
-  output$density_output <- renderText({
+  output$density_status <- renderText({
     data_update()
-    paste("Verbose: ", input$density_selection)
+    file <- switch(input$density_selection,
+      "verbose" = TRUE,
+      "condense" = FALSE
+    )
+    paste(file, "dataset loaded")
   })
 }
 
