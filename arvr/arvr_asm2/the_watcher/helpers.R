@@ -12,68 +12,142 @@ key <- paste("pk.eyJ1IjoianVhbmd1YXJpbm8iLCJhIjoiY2t1eGk",
              "7KMvK9_MSQ", sep = "")
 set_token(key)
 
-get_map <-
+get_map_data <- function(year, severity, lighting, road, weather) {
+    if (year == "All") {
+        year <- year_choices[["YEAR"]]
+    }
+    if (severity == "All") {
+        severity <- unique(data$CRASH_SEVERITY)
+    }
+    if (lighting == "All") {
+        lighting <- unique(data$LIGHTING_CONDITION)
+    }
+    if (road == "All") {
+        road <- unique(data$ROAD_CONDITION)
+    }
+    if (weather == "All") {
+        weather <- unique(data$WEATHER_CONDITION)
+    }
+    map_data <- data %>%
+        mutate(CRASH_DATE = dmy(CRASH_DATE)) %>%
+        mutate(YEAR = year(CRASH_DATE)) %>%
+        filter(
+            YEAR %in% year,
+            CRASH_SEVERITY %in% severity,
+            LIGHTING_CONDITION %in% lighting,
+            ROAD_CONDITION %in% road,
+            WEATHER_CONDITION %in% weather
+        )
+
+    if (dim(map_data)[1] == 0) {
+        return(data)
+    } else {
+        return(map_data)
+    }
+}
+
+get_map <- function(dataset) {
     mapdeck(
         style = mapdeck_style("dark"),
         pitch = 30,
         zoom = 9,
         location = c(149.12, -35.28)) %>%
         add_hexagon(
-            data = data,
+            data = dataset,
             lat = "LATITUDE",
             lon = "LONGITUDE",
             layer_id = "hex_layer",
             elevation_scale = 15,
             radius = 500,
             colour_range = colourvalues::colour_values(
-                1:6, palette = colourvalues::get_palette("ylorrd")),
+                # 1:6, palette = colourvalues::get_palette("ylorrd")),
+                1:6, palette = colourvalues::get_palette("purples")),
             legend = TRUE,
+            legend_options = list(title = "Number of Crashes"),
             auto_highlight = TRUE,
             update_view = F,
-)
+    )
+}
 
 # Constructe dataset different timeslot
-data["date"] <-
-    parse_date_time(data$CRASH_DATE, orders = c("dmy"))
+data["time"] <- parse_date_time(data$CRASH_DATE, orders = c("dmy"))
 
-data["Yearly"] <-
-    strptime(data$date, format = "%Y-%m-%d") %>% year()
+data["Yearly"] <- strptime(data$time, format = "%Y-%m-%d") %>% year()
 
-data["Monthly"] <-
-    strptime(data$date, format = "%Y-%m-%d") %>% month()
+data["Monthly"] <- strptime(data$time, format = "%Y-%m-%d") %>% month()
 
-data["Weekly"] <-
-    strptime(data$date, format = "%Y-%m-%d") %>% weekdays()
+data["Weekly"] <- strptime(data$time, format = "%Y-%m-%d") %>% weekdays()
 
-data["Hourly"] <-
-    strptime(data$CRASH_TIME, format = "%H:%M") %>% hour()
+data["Hourly"] <- strptime(data$CRASH_TIME, format = "%H:%M") %>% hour()
 
 # Trend Line Page
-get_trend_plot <- function(interval) {
-    dataset <-
-        setNames(data.frame(table(data[interval])), c("Interval", "Count"))
+get_trend_plot <- function(interval, district) {
+    if (district) {
+        dataset <- to_residential_district(data) %>%
+            group_by(SUBURB_LOCATION, across({{interval}})) %>%
+            summarise(COUNT = n())
 
-    ggplot(dataset, aes(x = Interval, y = Count)) +
-        geom_line(color = "#287D8EFF", group = 1) +
+        ggplot(dataset, aes(x = get(interval), y = COUNT)) +
+        geom_line(aes(color = SUBURB_LOCATION)) +
         geom_point() +
         theme_minimal() +
-        theme(plot.title = element_text(size = 12, face = "bold", hjust = 0.5),
-            axis.title.x = element_text(size = 10, hjust = 0.5, face = "bold"),
-            axis.text.x = element_text(size = 8),
+        theme(
+            plot.title = element_text(
+                size = 12, face = "bold", hjust = 0.5),
+            axis.title.x = element_text(
+                size = 10, hjust = 0.5, face = "bold"),
+            axis.text.x = element_text(
+                size = 8),
             axis.title.y = element_text(
                 size = 10, hjust = 0.5, vjust = 1, face = "bold"),
-            axis.text.y = element_text(size = 8),
-            axis.line.x = element_line(color = "black", size = 1),
+            axis.text.y = element_text(
+                size = 8),
+            axis.line.x = element_line(
+                color = "black", size = 1),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank()
+        ) +
+        scale_color_viridis_d() +
+        labs(
+            x = "Timeframe",
+            y = "Number of Crashes",
+            color = "Residential District",
+            title = paste0("Trendline (", interval, ") - ACT Crashes")
+        )
+
+    } else {
+        dataset <- data %>%
+            group_by(across({{interval}})) %>%
+            summarise(COUNT = n())
+
+        ggplot(dataset, aes(x = get(interval), y = COUNT)) +
+        geom_line(color = "#287D8EFF") +
+        geom_point() +
+        theme_minimal() +
+        theme(
+            plot.title = element_text(
+                size = 12, face = "bold", hjust = 0.5),
+            axis.title.x = element_text(
+                size = 10, hjust = 0.5, face = "bold"),
+            axis.text.x = element_text(
+                size = 8),
+            axis.title.y = element_text(
+                size = 10, hjust = 0.5, vjust = 1, face = "bold"),
+            axis.text.y = element_text(
+                size = 8),
+            axis.line.x = element_line(
+                color = "black", size = 1),
             legend.position = "none",
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank()
         ) +
-        scale_fill_viridis_d() +
+        scale_color_viridis_d() +
         labs(
-            x = interval,
+            x = "Timeframe",
             y = "Number of Crashes",
-            title = paste(interval, "- ACT Crashes")
+            title = paste0("Trendline (", interval, ") - ACT Crashes")
         )
+    }
 }
 
 # Rank Page
@@ -88,17 +162,21 @@ munsell::hue_slice("5P") +
     )
 
 get_rank_plot <- function(year, num) {
-    top_data <- data %>%
+    if (year == "All") {
+        year <- year_choices[["YEAR"]]
+    }
+
+    rank_data <- data %>%
         group_by(SUBURB_LOCATION) %>%
         summarise(COUNT = n()) %>%
         arrange(desc(COUNT)) %>%
         head(as.numeric(num))
 
     data %>%
-        filter(SUBURB_LOCATION %in% top_data$SUBURB_LOCATION) %>%
+        filter(SUBURB_LOCATION %in% rank_data$SUBURB_LOCATION) %>%
         mutate(CRASH_DATE = dmy(CRASH_DATE)) %>%
         mutate(YEAR = year(CRASH_DATE)) %>%
-        filter(YEAR == year) %>%
+        filter(YEAR %in% year) %>%
         count(SUBURB_LOCATION) %>%
         arrange(desc(n)) %>%
 
@@ -107,15 +185,19 @@ get_rank_plot <- function(year, num) {
             theme_minimal() +
             geom_text(size = 4, hjust = 1.5,
                 color = "white", fontface = "bold") +
-            theme(plot.title = element_text(
+            theme(
+                plot.title = element_text(
                     size = 12, face = "bold", hjust = 0.5),
                 axis.title.x = element_text(
                     size = 10, hjust = 0.5, face = "bold"),
-                axis.text.x = element_text(size = 8),
+                axis.text.x = element_text(
+                    size = 8),
                 axis.title.y = element_text(
                     size = 10, hjust = 0.5, vjust = 1, face = "bold"),
-                axis.text.y = element_text(size = 8),
-                axis.line.x = element_line(color = "black", size = 0.2),
+                axis.text.y = element_text(
+                    size = 8),
+                axis.line.x = element_line(
+                    color = "black", size = 0.2),
                 legend.position = "none",
                 panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank()
@@ -128,24 +210,59 @@ get_rank_plot <- function(year, num) {
             labs(
                 x = "Suburbs",
                 y = "Number of Crashes",
-                title = "Top Suburbs - ACT Crashes"
+                title = "Rank by Suburb - ACT Crashes"
             )
 }
 
 # Condition Page
 get_cond_plot <- function(year, suburb, column) {
+    if (year == "All") {
+        year <- year_choices[["YEAR"]]
+    }
+    if (suburb == "All") {
+        suburb <- toupper(c(get("canberra_central"),
+                            get("woden_valley"),
+                            get("belconnen"),
+                            get("weston_creek"),
+                            get("tuggeranong"),
+                            get("gungahlin"),
+                            get("molonglo_valley")))
+    } else {
+        suburb <- toupper(get(suburb))
+    }
+
     data %>%
         mutate(CRASH_DATE = dmy(CRASH_DATE)) %>%
         mutate(YEAR = year(CRASH_DATE)) %>%
-        filter(SUBURB_LOCATION %in% toupper(get(suburb)), YEAR == year) %>%
+        filter(SUBURB_LOCATION %in% suburb, YEAR %in% year) %>%
         group_by(across({{column}}), CRASH_SEVERITY) %>%
         summarise(COUNT = n()) %>%
 
-        ggplot(aes(x = get(column), y = COUNT, fill = CRASH_SEVERITY)) +
+        ggplot(aes(x = get(column), y = COUNT, fill = get(column))) +
             geom_bar(stat = "identity", position = "dodge") +
-            geom_text(aes(label = COUNT), vjust = -0.5) +
-            ggtitle("Crash by Conditions") +
-            theme_gray()
+            ggtitle("Compare by Condition - ACT Crashes") +
+            theme_minimal() +
+            labs(
+                x = "Categories",
+                y = "Number of Crashes",
+                fill = column) +
+            scale_fill_viridis_d(direction = -1) +
+            theme(
+                plot.title = element_text(
+                    size = 12, face = "bold", hjust = 0.5),
+                axis.title.x = element_text(
+                    size = 10, hjust = 0.5, face = "bold"),
+                axis.text.x = element_text(
+                    size = 8, angle = 45, vjust = 0.5),
+                axis.title.y = element_text(
+                    size = 10, hjust = 0.5, vjust = 1, face = "bold"),
+                axis.text.y = element_text(
+                    size = 8),
+                axis.line.x = element_line(
+                    color = "black", size = 0.2),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank()
+            )
 }
 
 # Miscellaneous
@@ -392,7 +509,7 @@ get_year_json <- function(dataset) {
 }
 
 # Generate JSON dataset
-get_json <- function(verbose) {
+get_vr_json <- function(verbose) {
     verbose <- as.logical(verbose)
     if (!verbose) {
         dataset <- to_residential_district(data)

@@ -9,34 +9,42 @@ ui <- navbarPage("Traffic OverWatch",
   tabPanel("Overview",
     sidebarLayout(
       sidebarPanel(
-        width = 2,
+        width = 3,
+        helpText("Select a year to inspect:"),
         selectInput(
           inputId = "map_year",
-          label = "Select a year to inspect:",
-          choices = year_choices,
+          label = "Year",
+          choices = c("All", year_choices),
+        ),
+        helpText("Select case categories:"),
+        selectizeInput(
+          inputId = "map_severity",
+          label = "Crash Severity",
+          choices = c("All", unique(data$CRASH_SEVERITY)),
+          selected = "All", multiple = FALSE,
+        ),
+        selectizeInput(
+          inputId = "map_lighting",
+          label = "Lighting Condition",
+          choices = c("All", unique(data$LIGHTING_CONDITION)),
+          selected = "All", multiple = FALSE,
+        ),
+        selectizeInput(
+          inputId = "map_road",
+          label = "Road Condition",
+          choices = c("All", unique(data$ROAD_CONDITION)),
+          selected = "All", multiple = FALSE,
+        ),
+        selectizeInput(
+          inputId = "map_weather",
+          label = "Weather Condition",
+          choices = c("All", unique(data$WEATHER_CONDITION)),
+          selected = "All", multiple = FALSE,
         ),
       ),
       mainPanel(
+        width = 9,
         mapdeckOutput("map_plot", width = "100%", height = "700px"),
-      ),
-    ),
-  ),
-
-  tabPanel("Trends",
-    sidebarLayout(
-      sidebarPanel(
-        width = 2,
-        selectInput(
-          inputId = "trend_interval",
-          label = "Select a interval to inspect:",
-          choices = c("Hourly",
-                      "Weekly",
-                      "Monthly",
-                      "Yearly"),
-        ),
-      ),
-      mainPanel(
-        plotOutput("trend_plot"),
       ),
     ),
   ),
@@ -54,12 +62,41 @@ ui <- navbarPage("Traffic OverWatch",
         selectInput(
           inputId = "rank_year",
           label = "Select a year to inspect:",
-          choices = year_choices,
-          selected = "2021",
+          choices = c("All", year_choices),
+          selected = "All",
         ),
       ),
       mainPanel(
+        width = 10,
         plotOutput("rank_plot"),
+      ),
+    ),
+  ),
+
+  tabPanel("Trends",
+    sidebarLayout(
+      sidebarPanel(
+        width = 2,
+        radioButtons(
+          inputId = "trend_district",
+          label = "Show trendline by:",
+          choices = c("Whole City" = FALSE,
+                      "Residential Districts" = TRUE),
+          selected = TRUE,
+        ),
+        selectInput(
+          inputId = "trend_interval",
+          label = "Select a interval to inspect:",
+          choices = c("Hourly",
+                      "Weekly",
+                      "Monthly",
+                      "Yearly"),
+          selected = "Monthly",
+        ),
+      ),
+      mainPanel(
+        width = 10,
+        plotOutput("trend_plot"),
       ),
     ),
   ),
@@ -71,29 +108,33 @@ ui <- navbarPage("Traffic OverWatch",
         selectInput(
           inputId = "cond_cond",
           label = "Select a condition to inspect:",
-          choices = c("Lighting Condition",
+          choices = c("Crash Severity",
+                      "Lighting Condition",
                       "Road Condition",
                       "Weather Condition"),
         ),
         selectInput(
           inputId = "cond_suburb",
           label = "Select a suburb to inspect:",
-          choices = c("Canberra Central",
+          choices = c("All",
+                      "Canberra Central",
                       "Woden Valley",
                       "Belconnen",
                       "Weston Creek",
                       "Tuggeranong",
                       "Gungahlin",
                       "Molonglo Valley"),
+          selected = "All",
         ),
         selectInput(
           inputId = "cond_year",
           label = "Select a year to inspect:",
-          choices = year_choices,
-          selected = "2020",
+          choices = c("All", year_choices),
+          selected = "All",
         ),
       ),
       mainPanel(
+        width = 10,
         plotOutput("cond_plot"),
       ),
     ),
@@ -111,8 +152,12 @@ ui <- navbarPage("Traffic OverWatch",
           selected = TRUE,
         ),
         verbatimTextOutput("density_status"),
+        helpText(paste(
+            "Note: Residential District consist of small ",
+            "suburbs within the area.", sep = ""))
       ),
       mainPanel(
+        width = 10,
         includeHTML("www/vr_view_list.html")
       ),
     ),
@@ -127,17 +172,21 @@ ui <- navbarPage("Traffic OverWatch",
 # Server logic
 server <- function(input, output) {
 
-  data_update <- reactive({
-    withProgress(message = "Processing", {
-      get_json(input$density_selection)
+  vr_data_update <- reactive({
+    withProgress(message = "Loading", {
+      get_vr_json(input$density_selection)
     })
   })
 
-  output$map_plot <- renderMapdeck(
-    get_map, env = parent.frame(), quoted = FALSE)
+  output$map_plot <- renderMapdeck(get_map(get_map_data(
+    input$map_year,
+    input$map_severity,
+    input$map_lighting,
+    input$map_road,
+    input$map_weather)))
 
   output$trend_plot <- renderPlot({
-    get_trend_plot(input$trend_interval)
+    get_trend_plot(input$trend_interval, input$trend_district)
   })
 
   output$rank_plot <- renderPlot({
@@ -158,13 +207,14 @@ server <- function(input, output) {
       "Weston Creek" = "weston_creek",
       "Tuggeranong" = "tuggeranong",
       "Gungahlin" = "gungahlin",
-      "Molonglo Valley" = "molonglo_valley"
+      "Molonglo Valley" = "molonglo_valley",
+      "All" = "All"
     )
     get_cond_plot(input$cond_year, suburb, column)
   })
 
   output$density_status <- renderText({
-    data_update()
+    vr_data_update()
     file <- switch(input$density_selection,
       "verbose" = TRUE,
       "condense" = FALSE
