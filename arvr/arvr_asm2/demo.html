@@ -4,33 +4,103 @@
         <meta charset="utf-8">
         <title>Demo</title>
         <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-        <script src="https://unpkg.com/aframe-environment-component@1.2.0/dist/aframe-environment-component.min.js"></script>
         <script src="https://unpkg.com/aframe-charts-component/dist/aframe-charts-component.min.js"></script>
     </head>
     <body>
 
         <a-scene background="color: grey" cursor="rayOrigin:mouse"> <!-- Cursor mouse clickable. -->
-            <a-light type="point" intensity="1" position="-2 10 10"></a-light>
 
-            <a-entity id="barId" charts="type: bar; dataPoints: ../data/demo.json" position="20 2 20" rotation="0 0 0"></a-entity>
+            <a-light type="ambient" intensity="0.3"></a-light>
+            <a-light type="point" intensity="0.3" position="-2 500 30"></a-light>
+            <a-entity light="type: directional; color: #EEE; intensity: 0.3" position="0 1 -1"></a-entity>
 
-            <a-light type="point" intensity="0.7" position="1 30 30"></a-light>
+            <a-assets>
+                <img id="mapPlane" src="data/map_of_cbr.svg" width="10240" height="10240">
+                <a-asset-item id="pinCar" src="data/jeep.obj"></a-asset-item>
+            </a-assets>
 
-            <a-entity position="1 5 20" charts='type: totem;  entity_id_list: barId;
-                dataPoints_list: {"Bruce": "../data/bruce.json", "Dickson": "../data/Dickson.json","Gungahlin": "../data/Gungahlin.json"}'>
+            <a-entity id="weatherId"
+                charts="dataPoints: ../data/data_fine.json;
+                type: cylinder; axis_visible: false; show_legend_info: false;
+                show_legend_title: Cases by Weather; show_legend_position: 10 200 -20">
             </a-entity>
 
-            <a-entity movement-controls="fly: true" position="0 0 30" rotation="0 0 0"> <!-- Camera fly movement. -->
+            <a-entity charts='type: totem; entity_id_list: weatherId;
+                dataPoints_list: {
+                    "Fine": "../data/data_fine.json",
+                    "Cloudy or Overcast": "../data/data_cloudy or overcast.json",
+                    "Light rain": "../data/data_light rain.json",
+                    "Fog": "../data/data_fog.json",
+                    "Snow or sleet": "../data/data_snow or sleet.json",
+                    "Heavy rain": "../data/data_heavy rain.json",
+                    "Smoke or dust": "../data/data_smoke or dust.json",
+                    "Other": "../data/data_other.json"
+                }' position="0 100 -10">
+            </a-entity>
 
-                <a-entity position="2 5 15" rotation="0 0 0">
-                    <a-camera position="0 -1 4" rotation="0 0 0">
-                        <!-- <a-cursor></a-cursor> -->
-                    </a-camera>
+
+            <a-entity id="lightingId"
+                charts="dataPoints: ../data/data_daylight.json;
+                type: cylinder; axis_visible: false; show_legend_info: false;
+                show_legend_title: Cases by Lighting; show_legend_position: 50 200 -20">
+            </a-entity>
+
+            <a-entity charts='type: totem; entity_id_list: lightingId;
+                dataPoints_list: {
+                    "Daylight": "../data/data_daylight.json",
+                    "Dark - poor street lighting": "../data/data_dark - poor street lighting.json",
+                    "Dark - good street lighting": "../data/data_dark - good street lighting.json",
+                    "Dark - no street lights": "../data/data_dark - no street lights.json",
+                    "Semi-darkness": "../data/data_semi-darkness.json"
+                }' position="20 100 -10">
+            </a-entity>
+
+            
+            <a-entity id="roadId"
+                charts="dataPoints: ../data/data_good dry surface.json;
+                type: cylinder; axis_visible: false; show_legend_info: false;
+                show_legend_title: Cases by Road; show_legend_position: -30 200 -20">
+            </a-entity>
+
+            <a-entity charts='type: totem; entity_id_list: roadId;
+                dataPoints_list: {
+                    "Good dry surface": "../data/data_good dry surface.json",
+                    "Wet surface": "../data/data_wet surface.json",
+                    "Loose surface": "../data/data_loose surface.json",
+                    "Snow or ice": "../data/data_snow or ice.json",
+                    "Muddy or oily surface": "../data/data_muddy or oily surface.json"
+                }' position="-10 100 -10">
+            </a-entity>
+
+
+            <a-entity id="severityId"
+                charts="dataPoints: ../data/data_injury.json;
+                type: cylinder; axis_visible: false; show_legend_info: false;
+                show_legend_title: Cases by Severity; show_legend_position: -60 200 -20">
+            </a-entity>
+
+            <a-entity charts='type: totem; entity_id_list: severityId;
+                dataPoints_list: {
+                    "Property Damage Only": "../data/data_property damage only.json",
+                    "Injury": "../data/data_injury.json",
+                    "Fatal": "../data/data_fatal.json"
+                }' position="-25 100 -10">
+            </a-entity>
+
+
+            <a-entity movement-controls="fly: true; speed: 30" position="0 200 0" rotation="0 0 0">
+
+                <a-camera position="0 0 0" rotation="0 0 0">
+                    <!-- <a-cursor></a-cursor> -->
+                </a-camera>
                 <a-entity laser-controls="hand: right"></a-entity> <!-- Control for Oculus. -->
             </a-entity>
 
-            <a-entity environment="preset: forest; dressingAmount: 500"></a-entity>
+            <a-entity obj-model="obj: #pinCar" position="15 0 50" rotation="0 0 0"></a-entity>
             
+            <a-plane src="#mapPlane" rotation="-90 0 0" width="1362" height="1394"></a-plane>
+            
+
         </a-scene>
 
     </body>
