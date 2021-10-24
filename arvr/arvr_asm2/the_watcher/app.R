@@ -9,7 +9,7 @@ ui <- navbarPage(
 
     # Page for crash case map
     tabPanel(
-        "Overview",
+        "Exploratory",
         sidebarLayout(
             sidebarPanel(
                 width = 3,
@@ -158,48 +158,43 @@ ui <- navbarPage(
         ),
     ),
 
-    # Alternative vr map view in bird eye angle
-    tabPanel(
+    # VR map view in bird eye angle
+    navbarMenu(
         "VR Map",
-        sidebarLayout(
-            sidebarPanel(
-                width = 2,
-                radioButtons(
-                    inputId = "vr_density",
-                    label = "Group cases by:",
-                    choices = c(
-                        "Suburb" = TRUE,
-                        "Residential District" = FALSE
+        # Overview of VR view, all cases displayed
+        tabPanel("Overview", includeHTML("www/overview.html")),
+
+        # VR maps for different comparison
+        tabPanel(
+            "Comparison",
+            sidebarLayout(
+                sidebarPanel(
+                    width = 2,
+                    radioButtons(
+                        inputId = "vr_density",
+                        label = "Group cases by:",
+                        choices = c(
+                            "Suburb" = TRUE,
+                            "Residential District" = FALSE
+                        ),
+                        selected = TRUE,
                     ),
-                    selected = TRUE,
+                    verbatimTextOutput("vr_data_status"),
+                    helpText(paste(
+                        "Note: Residential District consist of small ",
+                        "suburbs within the area.",
+                        sep = ""
+                    )),
                 ),
-                verbatimTextOutput("vr_data_status"),
-                helpText(paste(
-                    "Note: Residential District consist of small ",
-                    "suburbs within the area.",
-                    sep = ""
-                )),
-                # selectInput(
-                #     inputId = "vr_map",
-                #     label = "Compare by:",
-                #     choices = c(
-                #         "Year",
-                #         "Severity",
-                #         "Lighting conditon",
-                #         "Road condition",
-                #         "Weather condition"
-                #     ),
-                # ),
-            ),
-            mainPanel(
-                width = 10,
-                includeHTML("www/vr_view_list.html")
-                # htmlOutput("vr_map")
+                mainPanel(
+                    width = 10,
+                    includeHTML("www/vr_view_list.html")
+                ),
             ),
         ),
     ),
     navbarMenu(
-        "More",
+        "About",
         tabPanel("Reference", includeHTML("www/reference.html")),
         tabPanel("About", includeHTML("www/about.html")),
     ),
@@ -278,20 +273,6 @@ server <- function(input, output) {
         )
         paste(file, "dataset loaded")
     })
-
-    # output$vr_map <- renderUI({
-    #     if (input$vr_map == "Year") {
-    #         includeHTML("www/by_year.html")
-    #     } else if (input$vr_map == "Severity") {
-    #         includeHTML("www/by_severity.html")
-    #     } else if (input$vr_map == "Lighting condition") {
-    #         includeHTML("www/by_lighting.html")
-    #     } else if (input$vr_map == "Road condition") {
-    #         includeHTML("www/by_road.html")
-    #     } else if (input$vr_map == "Weather condition") {
-    #         includeHTML("www/by_weather.html")
-    #     }
-    # })
 }
 
 # Run the app

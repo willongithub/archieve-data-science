@@ -280,7 +280,7 @@ get_cond_plot <- function(year, suburb, column) {
             )
 }
 
-# Generate JSON file for dataset of conditions for VR Map
+# Generate JSON file by conditions for VR Map
 get_condition_json <- function(dataset, condition) {
     conditions <- unique(dataset[condition])[[condition]]
 
@@ -316,7 +316,7 @@ get_condition_json <- function(dataset, condition) {
     }
 }
 
-# Generate JSON file for dataset in terms of areas for VR Map
+# Generate JSON file in terms of areas for VR Map
 get_severity_json <- function(dataset) {
     conditions <- unique(dataset$CRASH_SEVERITY)
 
@@ -351,7 +351,7 @@ get_severity_json <- function(dataset) {
     }
 }
 
-# Generate JSON file for dataset by year for VR Map
+# Generate JSON file by year for VR Map
 get_year_json <- function(dataset) {
     for (i in 12:21) {
         year <- 2000 + i
@@ -386,7 +386,37 @@ get_year_json <- function(dataset) {
     }
 }
 
-# Generate all JSON dataset for VR maps
+# Generate JSON file for overview VR map, all cases displayed
+get_overview_json <- function(dataset) {
+    dataset_grouped <- dataset %>%
+        select(LONGITUDE, LATITUDE, SUBURB_LOCATION) %>%
+        group_by(SUBURB_LOCATION) %>%
+        summarise(
+            COUNT = n(),
+            LONGITUDE = mean(LONGITUDE),
+            LATITUDE = mean(LATITUDE)
+        )
+
+    dataset_json <- dataset_grouped %>%
+        mutate(
+            LONGITUDE = longitude_conversion(LONGITUDE),
+            LATITUDE = latitude_conversion(LATITUDE)
+        ) %>%
+        rename(c(x = LONGITUDE, z = LATITUDE)) %>%
+        mutate(
+            y = sqrt(COUNT),
+            size = sqrt(y),
+            color = "#5b2c60",
+            label = paste(SUBURB_LOCATION)
+        ) %>%
+        toJSON(dataframe = "rows") %>%
+        prettify(indent = 4)
+
+    dir <- paste0("www/assets/data_overview.json")
+    write(dataset_json, dir)
+}
+
+# Get all JSON dataset for VR maps
 get_vr_json <- function(verbose) {
     verbose <- as.logical(verbose)
     if (!verbose) {
@@ -397,6 +427,7 @@ get_vr_json <- function(verbose) {
             mutate(CRASH_DATE = dmy(CRASH_DATE))
     }
 
+    get_overview_json(data)
     get_year_json(dataset)
     get_severity_json(dataset)
     get_condition_json(dataset, "WEATHER_CONDITION")
