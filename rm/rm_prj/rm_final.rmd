@@ -1,0 +1,129 @@
+---
+title: "Regression Modeling G (6557)"
+subtitle: "Final Project"
+author: ""
+date: "Semester 2 2021"
+output:
+  pdf_document:
+    highlight: breezedark
+    df_print: kable
+---
+
+```{r include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+# Summary
+## 1 Multiple Linear Regression
+### What it does
+Multiple linear model expresses linear relationship between response and a vector of predictors. In the vector space of these predictors, it essentially finds a regression plane to best fit the data points as opposed to a straight line in a simple linaer model. There will be a hyperplane for higher dimenssional space that could not be renderd.
+
+### How it works
+Same as simple linear model, it use ordinary least squres method, which minimizes the sum of square errors, to find the optimal coefficients. And then apply f-test via ANOVA table to evaluate the model.
+
+### The pros & cons
+Pros:
++ It is fast regradless of the size of dataset.
++ Intuitive interpretation of the coefficient.
+
+Cons:
++ Susceptible to outliers.
++ Collinearity can affect the performance dramatically.
+
+## 2 Elastic Net
+### What it does
+In standard multiple linear regression, when there is additional relationship amoung the predictors, the coefficients may not work as it should be because of collinearity. Or there are too many predictors, which may lead to overfitting. To address those problems, regularization parameter is introduced. Predictors with little contribution to the final prediction performance will be penalized.
+
+### How it works
+For ridge regression, a shrink term (squared bias, L2-norm) is used to reduce the impact of coresponding coefficients by making it close to zero. While for lasso regression, those coefficients are shrinked to zero with a term (absolute bias, L1-norm). Elastic Net basiclly incorporates both terms above, so coefficients with minor impact will be shrinked and the irrelevant ones will be set to zero.
+
+### The pros & cons
+Pros:
++ It combine the pros of both ridge and lasso. L1-norm effectively performs feature selection. L2-norm can stabilizes the progress of L1-norm and eliminates the limit of feature to be selected by it.
++ It encourages group effect if coefficients are highly correlated as opposed to lasso method which just simply put some of them to zero so less information will be removed.
+
+Cons:
++ Balance of L1-norm and L2-norm need to be tuned (lambda).
+
+## 3 KNN
+### What it does
+K nearest neighbours algorithm predict the response by comparing the input data points with the k most similar samples in the dataset. Usually, they are compared via euclidean distance (or other distance function) in the vector space so ther are called neighbours. The input will be given a prediction determined only by the k neighbours.
+
+### How it works
+The response can be numerical or categorical so that is able to perform regression or classification job. The major parameter of the algorithm is k, which determines how many nearest samples are taken into consideration and then determines the performance. Optimal k is choosed by minimizing error metric such as RMSE for regression or maximizing accuracy of classification.
+
+### The pros & cons
+Pros:
++ Easy to understand and implement.
++ Robust to outliers.
++ Less requirement for input.
+
+Cons:
++ Susceptible to imbalanced dataset.
++ Computational expensive for high dimenssion and long data.
++ Hard to interpret underlaying implication.
+
+## 4 Poisson GLM
+### What it does
+Generalized linear models (GLMs) extend the multiple linear regression model with other underlying probability distributions of response. Essentially, it allows us to deal with qualitative responses.
+
+"Poisson" distribution is a discrete probability distribution which models count of a event in certain timeframe, such as daily visitor to a restaurant. To inspect response of this kind with regard to predictors, we can use poisson GLM.
+
+### How it works
+The poisson GLM expresses relationship between natural logarithmic value of response and a vector of predictors as a linear function. Predictors can be continuous or categorical. The "log" link function make sure the response is positive because we are using "poisson" which deal with count (positive integers).
+
+Then we will apply maximum likelihood method to find the optimal coefficients, which in general maximizes the log-likehood of the model.
+
+In terms of the coefficients, when the corresponding predictor increase by 1 unit (constant for others), the "log" response will increase by the value of this coefficient, or the response will be multipled by exponential of the coefficient.
+
+### The pros & cons
+Pros:
++ No specific requirement for predictor.
++ Relatively easy and clear interpretation.
+
+Cons:
++ Perform poorly on "zero" count events.
++ Restrictive assumption on mean and variance.
+
+## Comparison
+In general, the choice of model depends on application and dataset available. When normal distribution and independence assumption satisfied and strong linear relation existed, standard linear model can perform well enough. If regulazation is needed to address overfitting, collinearity and so on, elastic net is considered. KNN is universal in many cases without strict assumption on distribution but can be computational expensive to implement. Poisson GLM works well with response which satisfied poisson distribution so it can be limited.
+
+# Case Study
+```{r include = FALSE}
+require(caret)
+set.seed(111)
+```
+
+```{r}
+dataset <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/00560/SeoulBikeData.csv")
+summary(dataset)
+head(dataset)
+```
+## Train and predict
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+## Evaluate and compare
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+# References
+> Applied Regression Modeling Third Edition by Iain Pardoe
+> 
