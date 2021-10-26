@@ -15,7 +15,6 @@ people think about the move from 1~10.
 
 import data_loader
 
-import sys
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import LinearSVC
 from sklearn.pipeline import Pipeline
@@ -27,7 +26,8 @@ import matplotlib.pyplot as plt
 
 folder = 'assets/comment_data'
 dataset = load_files(folder, shuffle=False)
-print((dataset.data).shape)
+print(len(dataset.data))
+# print(dataset.data[0])
 
 X_train, X_test, y_train, y_test = train_test_split(
     dataset.data, dataset.target, test_size=0.2, random_state=111)
