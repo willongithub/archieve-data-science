@@ -1,3 +1,6 @@
+'''Entry point.'''
 
+import helpers
 
-import pandas
+data_bunch = helpers.get_data()
+clf = helpers.Classifier(data_bunch, 'knn')
