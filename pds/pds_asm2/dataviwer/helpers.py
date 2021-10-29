@@ -1,4 +1,5 @@
-'''Classification helper components.'''
+# ==============================================================================
+"""Classification helper components."""
 
 import numpy as np
 import pandas as pd
@@ -13,7 +14,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, plot_confusion_matrix, ConfusionMatrixDisplay, classification_report, confusion_matrix
 
 def get_data(data_name: str='iris') -> object:
-    ''''''
+    """"""
 
     try:
         if data_name == 'iris':
@@ -31,7 +32,7 @@ def get_data(data_name: str='iris') -> object:
     return data
 
 class Classifier():
-    ''''''
+    """"""
 
     def __init__(
         self,
@@ -42,7 +43,7 @@ class Classifier():
         score='accuracy',
         scaler='standard',
         demo=True) -> None:
-        ''''''
+        """"""
 
         self.estimator = classifier
         self.dataset = data
