@@ -7,9 +7,6 @@
 # Name:
 # ID:
 
-import data_loader
-
-import sys
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
@@ -17,6 +14,5 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.datasets import load_files
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
-
 
 nb = MultinomialNB(alpha=1)

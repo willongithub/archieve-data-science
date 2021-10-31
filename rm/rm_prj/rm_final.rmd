@@ -1,12 +1,13 @@
 ---
 title: "Regression Modeling G (6557)"
-subtitle: "Final Project"
 author: ""
 date: "Semester 2 2021"
 output:
   pdf_document:
     highlight: breezedark
     df_print: kable
+  word_document: default
+subtitle: Final Project
 ---
 
 ```{r include = FALSE}
@@ -16,114 +17,326 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 # Summary
 ## 1 Multiple Linear Regression
 ### What it does
-Multiple linear model expresses linear relationship between response and a vector of predictors. In the vector space of these predictors, it essentially finds a regression plane to best fit the data points as opposed to a straight line in a simple linaer model. There will be a hyperplane for higher dimenssional space that could not be renderd.
+Multiple linear model expresses linear relationship between response and a vector of predictors. In the vector space of these predictors, it essentially finds a regression plane to best fit the data points as opposed to a straight line in a 2-D simple linear model. There will be a hyperplane for higher dimensional space that could not be rendered.
 
 ### How it works
-Same as simple linear model, it use ordinary least squres method, which minimizes the sum of square errors, to find the optimal coefficients. And then apply f-test via ANOVA table to evaluate the model.
+Same as simple linear model, it use ordinary least squares method, which minimizes the sum of square errors, to find the optimal coefficients. And then apply f-test via ANOVA table to evaluate the model.
 
 ### The pros & cons
-Pros:
-+ It is fast regradless of the size of dataset.
-+ Intuitive interpretation of the coefficient.
+* Pros:
+  + It is fast regardless of the size of dataset.
+  + Intuitive interpretation of the coefficient.
 
-Cons:
-+ Susceptible to outliers.
-+ Collinearity can affect the performance dramatically.
+* Cons:
+  + Susceptible to outliers.
+  + Collinearity can affect the performance dramatically.
 
 ## 2 Elastic Net
 ### What it does
-In standard multiple linear regression, when there is additional relationship amoung the predictors, the coefficients may not work as it should be because of collinearity. Or there are too many predictors, which may lead to overfitting. To address those problems, regularization parameter is introduced. Predictors with little contribution to the final prediction performance will be penalized.
+In standard multiple linear regression, when there is additional relationship among the predictors, the coefficients may not work as it should be because of collinearity. Or there are too many predictors, which may lead to overfitting. To address those problems, regularization parameter is introduced. Predictors with little contribution to the final prediction performance will be penalized.
 
 ### How it works
-For ridge regression, a shrink term (squared bias, L2-norm) is used to reduce the impact of coresponding coefficients by making it close to zero. While for lasso regression, those coefficients are shrinked to zero with a term (absolute bias, L1-norm). Elastic Net basiclly incorporates both terms above, so coefficients with minor impact will be shrinked and the irrelevant ones will be set to zero.
+For ridge regression, a shrink term (squared bias, L2-norm) is used to reduce the impact of corresponding coefficients by making it close to zero. While for lasso regression, those coefficients are shrunk to zero with a term (absolute bias, L1-norm). Elastic Net basically incorporates both terms above, so coefficients with minor impact will be shrunk and the irrelevant ones will be set to zero.
 
 ### The pros & cons
-Pros:
-+ It combine the pros of both ridge and lasso. L1-norm effectively performs feature selection. L2-norm can stabilizes the progress of L1-norm and eliminates the limit of feature to be selected by it.
-+ It encourages group effect if coefficients are highly correlated as opposed to lasso method which just simply put some of them to zero so less information will be removed.
+* Pros:
+  + It combine the pros of both ridge and lasso. L1-norm effectively performs feature selection. L2-norm can stabilizes the progress of L1-norm and eliminates the limit of feature to be selected by it.
+  + It encourages group effect if coefficients are highly correlated as opposed to lasso method which just simply put some of them to zero so less information will be removed.
 
-Cons:
-+ Balance of L1-norm and L2-norm need to be tuned (lambda).
+* Cons:
+  + Balance of L1-norm and L2-norm need to be tuned (lambda).
 
 ## 3 KNN
 ### What it does
 K nearest neighbours algorithm predict the response by comparing the input data points with the k most similar samples in the dataset. Usually, they are compared via euclidean distance (or other distance function) in the vector space so ther are called neighbours. The input will be given a prediction determined only by the k neighbours.
 
 ### How it works
-The response can be numerical or categorical so that is able to perform regression or classification job. The major parameter of the algorithm is k, which determines how many nearest samples are taken into consideration and then determines the performance. Optimal k is choosed by minimizing error metric such as RMSE for regression or maximizing accuracy of classification.
+The response can be numerical or categorical so that is able to perform regression or classification job. The major parameter of the algorithm is k, which determines how many nearest samples are taken into consideration and then determines the performance. Optimal k is chosen by minimizing error metric such as RMSE for regression or maximizing accuracy of classification.
 
 ### The pros & cons
-Pros:
-+ Easy to understand and implement.
-+ Robust to outliers.
-+ Less requirement for input.
+* Pros:
+  + Easy to understand and implement.
+  + Robust to outliers.
+  + Less requirement for input.
 
-Cons:
-+ Susceptible to imbalanced dataset.
-+ Computational expensive for high dimenssion and long data.
-+ Hard to interpret underlaying implication.
+* Cons:
+  + Susceptible to imbalanced dataset.
+  + Computational expensive for high dimension and long data.
+  + Hard to interpret underlying implication.
 
 ## 4 Poisson GLM
 ### What it does
 Generalized linear models (GLMs) extend the multiple linear regression model with other underlying probability distributions of response. Essentially, it allows us to deal with qualitative responses.
 
-"Poisson" distribution is a discrete probability distribution which models count of a event in certain timeframe, such as daily visitor to a restaurant. To inspect response of this kind with regard to predictors, we can use poisson GLM.
+"Poisson" distribution is a discrete probability distribution which models count of a event in certain time frame, such as daily visitor to a restaurant. To inspect response of this kind with regard to predictors, we can use poisson GLM.
 
 ### How it works
 The poisson GLM expresses relationship between natural logarithmic value of response and a vector of predictors as a linear function. Predictors can be continuous or categorical. The "log" link function make sure the response is positive because we are using "poisson" which deal with count (positive integers).
 
 Then we will apply maximum likelihood method to find the optimal coefficients, which in general maximizes the log-likehood of the model.
 
-In terms of the coefficients, when the corresponding predictor increase by 1 unit (constant for others), the "log" response will increase by the value of this coefficient, or the response will be multipled by exponential of the coefficient.
+In terms of the coefficients, when the corresponding predictor increase by 1 unit (constant for others), the "log" response will increase by the value of this coefficient, or the response will be multiplied by exponential of the coefficient.
 
 ### The pros & cons
-Pros:
-+ No specific requirement for predictor.
-+ Relatively easy and clear interpretation.
+* Pros:
+  + No specific requirement for predictor.
+  + Relatively easy and clear interpretation.
 
-Cons:
-+ Perform poorly on "zero" count events.
-+ Restrictive assumption on mean and variance.
+* Cons:
+  + Perform poorly on "zero" count events.
+  + Restrictive assumption on mean and variance.
 
 ## Comparison
-In general, the choice of model depends on application and dataset available. When normal distribution and independence assumption satisfied and strong linear relation existed, standard linear model can perform well enough. If regulazation is needed to address overfitting, collinearity and so on, elastic net is considered. KNN is universal in many cases without strict assumption on distribution but can be computational expensive to implement. Poisson GLM works well with response which satisfied poisson distribution so it can be limited.
+In general, the choice of model depends on application and dataset available. When normal distribution and independence assumption satisfied and strong linear relation existed, standard linear model can perform well enough. If regularization is needed to address overfitting, collinearity and so on, elastic net is considered. KNN is universal in many cases without strict assumption on distribution but can be computational expensive to implement. Poisson GLM works well with response which satisfied poisson distribution so it can be limited.
 
 # Case Study
-```{r include = FALSE}
+Dataset: Seoul Bike Sharing Demand
+
+* Attribute Information:
+  + Date : year-month-day
+  + Rented Bike count - Count of bikes rented at each hour
+  + Hour - Hour of he day
+  + Temperature-Temperature in Celsius
+  + Humidity - %
+  + Windspeed - m/s
+  + Visibility - 10m
+  + Dew point temperature - Celsius
+  + Solar radiation - MJ/m2
+  + Rainfall - mm
+  + Snowfall - cm
+  + Seasons - Winter, Spring, Summer, Autumn
+  + Holiday - Holiday/No holiday
+  + Functional Day - NoFunc(Non Functional Hours), Fun(Functional hours)
+
+The objective is to predict the bike count required at each hour.
+```{r include=FALSE}
 require(caret)
+require(tidyverse)
+require(ggplot2)
+require(Hmisc)
 set.seed(111)
 ```
 
-```{r}
+Check the dataset loaded.
+```{r include=FALSE}
 dataset <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/00560/SeoulBikeData.csv")
-summary(dataset)
-head(dataset)
+glimpse(dataset)
 ```
-## Train and predict
+
+## Data Exploratory and Training
+```{r echo=FALSE}
+# Pre-process and exploratory
+dataset <- as_tibble(dataset) %>%
+  mutate(across(c(Seasons, Holiday, Functioning.Day), as_factor)) %>%
+  select(-Date)
+
+dataset %>%
+  ggplot(aes(Rented.Bike.Count)) +
+    geom_histogram(aes(y = ..density..)) +
+    geom_density(alpha = .5, fill = 'red') +
+    ggtitle('Distribution of Rented Bike Count')
+```
+
+```{r include=FALSE}
+featurePlot(x = dataset[, 2:10], 
+            y = dataset$Rented.Bike.Count, 
+            plot = 'scatter',
+            layout = c(3, 3))
+
+hist.data.frame(dataset[, 2:10])
+```
+From the plot we can see, the response (Bike Count) can probably model by poisson distribution.
+
+```{r include=FALSE}
+# Split the data.
+trainIndex <- createDataPartition(dataset$Hour, p = .8, list = FALSE)
+
+dataTrain <- dataset[trainIndex, ]
+dataTest <- dataset[-trainIndex, ]
+```
+
+### Multiple linear model
 ```{r}
+# Multiple linear model.
+modelLm <- train(
+  Rented.Bike.Count ~ .,
+  data = dataTrain,
+  method = 'lm',
+  trControl = trainControl('cv', number = 5))
+
+summary(modelLm)
+```
+We can see the "Visibility", "Dew point" and "Snowfall" are less relevant so will be removed.
+
+```{r}
+# Retrain
+dataTrain <- dataTrain %>% select(-c(6, 7, 10))
+
+start <- proc.time()
+
+modelLm <- train(
+  Rented.Bike.Count ~ .,
+  data = dataTrain,
+  method = 'lm',
+  trControl = trainControl('cv', number = 5))
+
+timerLm <- (proc.time() - start)['elapsed']
+
+summary(modelLm)
+cat('Training time:', timerLm)
+```
+Then we have the linear model above.
+
+```{r}
+# Elastic Net.
+start <- proc.time()
+
+modelEn <- train(
+  Rented.Bike.Count ~ .,
+  data = dataTrain,
+  method = 'glmnet',
+  trControl = trainControl('cv', number = 5))
+
+timerEn <- (proc.time() - start)['elapsed']
+
+print(modelEn)
+cat('Training time:', timerEn)
 ```
 
 ```{r}
+# KNN.
+start <- proc.time()
+
+modelKnn <- train(
+  Rented.Bike.Count ~ .,
+  data = dataTrain,
+  method = 'knn',
+  trControl = trainControl('cv', number = 5))
+
+timerKnn <- (proc.time() - start)['elapsed']
+
+print(modelKnn)
+cat('Training time:', timerKnn)
 ```
 
 ```{r}
+# Poisson GLM.
+start <- proc.time()
+
+modelPg <- train(
+  Rented.Bike.Count ~ .,
+  data = dataTrain,
+  method = 'glmnet',
+  family = "poisson",
+  trControl = trainControl('cv', number = 5))
+
+timerPg <- (proc.time() - start)['elapsed']
+
+print(modelPg)
+cat('Training time:', timerPg)
+```
+
+## Predict and Evaluate
+```{r}
+# Multiple linear model.
+start <- proc.time()
+
+predLm <- predict(modelLm, dataTest)
+
+timerLm['predict'] <- (proc.time() - start)['elapsed']
+
+metricLm <- postResample(predLm, dataTest$Rented.Bike.Count) %>% print()
 ```
 
 ```{r}
-```
-## Evaluate and compare
-```{r}
+# Elastic Net.
+start <- proc.time()
+
+predEn <- predict(modelEn, dataTest)
+
+timerEn['predict'] <- (proc.time() - start)['elapsed']
+
+metricEn <- postResample(predEn, dataTest$Rented.Bike.Count) %>% print()
 ```
 
 ```{r}
+# KNN.
+start <- proc.time()
+
+predKnn <- predict(modelKnn, dataTest)
+
+timerKnn['predict'] <- (proc.time() - start)['elapsed']
+
+metricKnn <- postResample(predKnn, dataTest$Rented.Bike.Count) %>% print()
 ```
 
 ```{r}
+# Poisson GLM.
+start <- proc.time()
+
+predPg <- predict(modelPg, dataTest)
+
+timerPg['predict'] <- (proc.time() - start)['elapsed']
+
+metricPg <- postResample(predPg, dataTest$Rented.Bike.Count) %>% print()
 ```
 
-```{r}
+### Compare models
+```{r echo=FALSE}
+# Compare models.
+metricAll <- as_tibble(rbind(metricLm, metricEn, metricKnn, metricPg))
+
+metricAll['Model'] <- c('Multiple Linear', 'Elastic Net', 'KNN', 'Poisson GLM')
+
+metricAll <- metricAll %>% relocate('Model')
+
+metricAll['Train'] <- tibble(c(
+  timerLm['elapsed'],
+  timerEn['elapsed'],
+  timerKnn['elapsed'],
+  timerPg['elapsed']))
+
+metricAll['Predict'] <- tibble(c(
+  timerLm['predict'],
+  timerEn['predict'],
+  timerKnn['predict'],
+  timerPg['predict']))
+
+print(metricAll)
 ```
+Apparently, KNN wins with best RMSE and R2. On the other hand, Multiple Linear model and Elastic Net provide similar performance in this case. However, KNN and Poisson GLM are slower.
+
+### Rank by RMSE
+```{r echo=FALSE}
+# Rank by RMSE.
+metricAll %>%
+  mutate(Rsquared = 100*Rsquared, order = RMSE) %>%
+  rename("R2 (%)" = Rsquared) %>% 
+  pivot_longer(2:4, names_to = 'metric', values_to = 'value') %>%
+  ggplot(aes(x = reorder(Model, order), y = value, fill = metric)) +
+    geom_col(position = 'dodge2') +
+    ggtitle('Rank by RMSE') +
+    xlab('Model') +
+    scale_fill_viridis_d()
+```
+As we can see from the ranking, KNN shows best holistic performance, followed by Poisson GLM. KNN's better performance may due to its resistant to noisy data in this case. Poisson GLM benefit from that fact that the response follows poisson distribution well.
+
+### Rank by Processing time
+```{r echo=FALSE}
+# Rank by Processing time
+metricAll %>%
+  mutate(order = Train + Predict) %>%
+  pivot_longer(5:6, names_to = 'metric', values_to = 'value') %>%
+  ggplot(aes(x = reorder(Model, order), y = value, fill = metric)) +
+    geom_bar(stat = 'identity', position = 'stack') +
+    ggtitle('Rank by Processing Time') +
+    xlab('Model') +
+    ylab('time (second)') +
+    scale_fill_viridis_d()
+```
+While KNN and Poisson GLM shows better prediction performance, they did take longer time to train. In the meantime, KNN requires longer time to do prediction which is the natural of the algorithm. Because it still needs to find and do calculation on the k neighbours in each prediction process. Its training is to find the optimal k without a regression function like the others.
 
 # References
-> Applied Regression Modeling Third Edition by Iain Pardoe
-> 
+- Sathishkumar V E, Jangwoo Park, and Yongyun Cho. 'Using data mining techniques for bike sharing demand prediction in metropolitan city.' Computer Communications, Vol.153, pp.353-366, March, 2020
+- Sathishkumar V E and Yongyun Cho. 'A rule-based model for Seoul Bike sharing demand prediction using weather data' European Journal of Remote Sensing, pp. 1-18, Feb, 2020
+- Applied Regression Modeling Third Edition by Iain Pardoe
