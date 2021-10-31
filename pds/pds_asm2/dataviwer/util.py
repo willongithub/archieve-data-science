@@ -13,16 +13,16 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler, RobustScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score, plot_confusion_matrix, ConfusionMatrixDisplay, classification_report, confusion_matrix
+from sklearn.metrics import ConfusionMatrixDisplay, classification_report, accuracy_score
 
 class Classifier:
-    """"""
+    """Implement KNN and SVC classifier."""
 
-    def __init__(self, model, dataset):
-        """"""
+    def __init__(self, model):
+        """Initalze for KNN or SVC."""
 
-        self.estimator = model
-        self.dataset = dataset
+        self.model_name = model
+        self.dataset_name = 'iris'
         self.partition = 0.2
         self.fold = 5
         self.score = 'accuracy'
@@ -30,61 +30,103 @@ class Classifier:
         self.verbose = 1
         self.parallel = -1
 
+        # Set random state not not.
         self.demo = True
 
-        self.params = {}
+        if model == 'knn':
+            self.params = {       
+                'n_neighbors': []
+            }
+        if model == 'svc':
+            self.params = {
+                'gamma': [],
+                'C': []
+            }
+
+        self.data_object = None
 
     @property
     def model(self):
-        return self.estimator
+        return self.model_name
 
     @property
     def data(self):
-        return self.dataset.DESCR
+        """Return dataset description."""
+
+        return self.data_object.DESCR
     
     @property
     def info(self):
-        print(f'Classifier: {self.estimator}')
-        print(f'Dataset: {self.dataset}')
-        print(f'Test partition: {self.partition}')
-        print(f'Cross-validation fold: {self.fold}')
-        print(f'Cross-validation metric: {self.score}')
-        print(f'Preprocess scaler: {self.scaler}')
+        """Return basic info of current classifier."""
+
+        info = [
+            f'Classifier: {self.model_name}',
+            f'Dataset: {self.dataset_name}',
+            f'Data dimmsion: {self.data_object.data.shape}',
+            f'Test partition: {self.partition}',
+            f'CV fold: {self.fold}',
+            f'CV metric: {self.score}',
+            # f'Preprocess scaler: {self.scaler}'
+        ]
+
+        return info
 
     def set_params(self, flag='', **params):
-        if flag == '': flag = self.estimator
+        """Load params when fitting or manully set the values."""
+
+        # No flag means load params instead of setting.
+        if flag == '': flag = self.model_name
 
         if flag == 'knn':
-            if len(self.params) == 0:
-                self.params['n_neighbors'] = np.linspace(1, 10, 10)
+            if len(self.params['n_neighbors']) == 0:
+                self.params['n_neighbors'] = np.linspace(1, 30, 30,
+                                                         dtype=int).tolist()
         elif flag == 'svc':
             if len(self.params['gamma']) == 0:
-                self.params['gamma'] = np.logspace(-2, 2, 10)
+                self.params['gamma'] = np.logspace(-3, 3, 10).tolist()
             if len(self.params['C']) == 0:
-                self.params['C'] = np.logspace(-1, 0, 10)
+                self.params['C'] = np.logspace(-3, 3, 10).tolist()
         
+        # Set values according to flag.
         elif flag == 'k':
-            self.params['n_neighbors'] = params['k']
+            self.params['n_neighbors'] = [params['k']]
         elif flag == 'g':
-            self.params['gamma'] = params['g']
+            self.params['gamma'] = [params['g']]
         elif flag == 'c':
-            self.params['C'] = params['c']
+            self.params['C'] = [params['c']]
+
+        # Reset to auto.
+        elif flag == 'auto':
+            if self.model_name == 'knn':
+                self.params['n_neighbors'] = []
+        elif flag == 'auto_g':
+            if self.model_name == 'svc':
+                self.params['gamma'] = []
+        elif flag == 'auto_c':
+            if self.model_name == 'svc':
+                self.params['C'] = []
         else:
             self.params = params
+        
+        return self.params
 
     def set_classifier(self, model=''):
-        if model != '': self.estimator = model
+        """Load estimator when fitting or manully set the values."""
 
-        if self.estimator == 'knn':
-            model = KNeighborsClassifier()
-        elif self.estimator == 'svc':
-            model = SVC()
+        if model != '': self.model_name = model
+
+        if self.model_name == 'knn':
+            estimator = KNeighborsClassifier()
+        elif self.model_name == 'svc':
+            estimator = SVC()
         else:
             raise ValueError('Specified estimator illegal.')
         
-        return model
+        return estimator
 
     def set_scaler(self, scaler=''):
+        """Load scaler when fitting or manully set the values."""
+
         if scaler != '': self.scaler = scaler
 
         if self.scaler == 'none':
@@ -102,71 +144,162 @@ class Classifier:
         
         return scaler
 
-    def load_data(self, data):
-        """"""
-
-        if data == 'iris':
+    def load_data(self, dataset):
+        """Load dataset."""
+        
+        if dataset == 'iris':
             data = load_iris()
-        elif data == 'cancer':
+        elif dataset == 'cancer':
             data = load_breast_cancer()
-        elif data == 'wine':
+        elif dataset == 'wine':
             data = load_wine()
         else:
-            if type(data) != 'sklearn.utils.Bunch':           
+            if type(dataset) != 'sklearn.utils.Bunch':           
                 raise ValueError('Specified dataset illegal.')
+            else:
+                data = dataset
         
         return data
 
     def get_result(self):
-        """"""
+        """Fit the model and return results."""
 
-        data = self.load_data(self.dataset)
-        estimator = self.set_classifier(self.estimator)
-        scaler = self.set_scaler(self.scaler)
+        self.data_object = self.load_data(self.dataset_name)
+        estimator = self.set_classifier(self.model_name)
+        # scaler = self.set_scaler(self.scaler)
+
+        params = self.set_params()
 
         state = 111 if self.demo else 0
         
         X_train, X_test, y_train, y_test = train_test_split(
-            data.data,
-            data.target,
+            self.data_object.data,
+            self.data_object.target,
             test_size=self.partition,
             random_state=state)
 
+        # pipe = make_pipeline(
+        #     scaler,
+        #     estimator,
+        # )
+
         grid_search = GridSearchCV(
             estimator = estimator,
-            param_grid = self.params,
+            param_grid = params,
             cv = self.fold,
             scoring = self.score,
             verbose = self.verbose,
             n_jobs = self.parallel
         )
         
-        pipe = make_pipeline(
-            scaler,
-            grid_search,
-        )
+        grid_search.fit(X_train, y_train)
+
+        y_pred = grid_search.predict(X_test)
+
+
+        result = {
+            'y_true': y_test,
+            'y_pred': y_pred,
+            'gscv': grid_search
+        }
+
+        return result
+
+    def get_report(self, result):
+        """Return fitting report, including recall, accuracy, etc."""
+        report = classification_report(
+            result['y_true'], result['y_pred'],
+            target_names=self.data_object.target_names)
+
+        return report
+
+    def get_output(self, result):
+        """Return assignment require outputs."""
+
+        params = result['gscv'].best_params_
+        accuracy = accuracy_score(result['y_true'], result['y_pred']) * 100
+        prediction = pd.DataFrame({
+            'True': result['y_true'],
+            'Pred': result['y_pred']
+        })
+        output = [
+            f'Accuracy score: {accuracy:3.2f}%',
+            f'Best parameters:\n{params}',
+            f'Prediction:\n{prediction}'
+        ]
+
+        return output
+
+    def get_confusion_matrix_plot(self, result):
+        """Plot confusion matrix."""
+
+        plot = ConfusionMatrixDisplay.from_predictions(
+            result['y_true'], result['y_pred'],
+            display_labels=self.data_object.target_names).figure_
+
+        return plot
+
+    def get_params_cv_plot(self, result):
+        """Plot cross-validation of hyper parameters."""
         
-        pipe.fit(X_train, y_train)
+        if self.model_name == 'knn':
+            x = self.params['n_neighbors']
+            y = result['gscv'].cv_results_['mean_test_score'].tolist()
 
-        # n_candidates = len(grid_search.cv_results_['params'])
-        # for i in range(n_candidates):
-        #     print(i, 'params - %s; mean - %0.2f; std - %0.2f'
-        #         % (grid_search.cv_results_['params'][i],
-        #         grid_search.cv_results_['mean_test_score'][i],
-        #         grid_search.cv_results_['std_test_score'][i]))
+            fig, ax = plt.subplots()
+            ax.plot(x, y, label='score')
 
-        y_pred = pipe.predict(X_test)
+            max_y = max(y)
+            max_x = x[y.index(max_y)]
 
-        result = classification_report(
-            y_test, y_pred,
-            target_names=data.target_names)
+            text = f'K: {max_x}'
 
-        # print(confusion_matrix(y_test, y_pred))
+            ax.plot(max_x, max_y, ls='', marker='o', label='optimal')
 
-        accuracy = accuracy_score(y_test, y_pred) * 100
-        plotcm = plot_confusion_matrix(
-            pipe, X_test, y_test, display_labels=data.target_names)
-        plotcm.ax_.set_title('Accuracy = {0:.2f}%'.format(accuracy))
-        # plt.show()
+            arrowprops = dict(
+                arrowstyle="->",
+                shrinkB=5,
+                connectionstyle='angle3, angleA=90, angleB=170')
+            options = dict(
+                xy=(max_x, max_y),
+                xytext=(0.85, 0.5),
+                xycoords='data',
+                textcoords='figure fraction',
+                arrowprops=arrowprops,
+                ha='right', va='top')
 
-        return plotcm
+            ax.annotate(text, **options)
+
+            ax.set_xlabel('Number of Neighbors (K)')
+            ax.set_ylabel('CV Score')
+            ax.set_title("CV hyper-parameters (KNN)")
+            ax.legend()
+        
+        if self.model_name == 'svc':
+            x = result['gscv'].cv_results_['param_gamma']
+            y = result['gscv'].cv_results_['param_C']
+            z = result['gscv'].cv_results_['mean_test_score']
+
+            fig = plt.figure()
+            ax = fig.add_subplot(projection='3d')
+            
+            ax.plot(x, y, z, label='score')
+
+            
+            max_x = result['gscv'].best_params_['gamma']
+            max_y = result['gscv'].best_params_['C']
+            max_z = max(z)
+
+            text = f'Gamma: {max_x:3.2f}, C: {max_y:3.2f}'
+
+            ax.plot(max_x, max_y, max_z, ls='', marker='o', label='optimal')
+
+            ax.text(max_x, max_y, max_z + 0.05, text)
+
+            ax.set_xlabel('Gamma')
+            ax.set_ylabel('C')
+            ax.set_zlabel('CV Score')
+            ax.set_title("CV hyper-parameters (SVC)")
+            ax.legend()
+        
+        return fig
