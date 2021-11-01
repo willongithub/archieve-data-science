@@ -3,7 +3,7 @@
 # ==============================================================================
 """GUI components."""
 
-from util import Classifier
+from dataviwer.util import Classifier
 
 import tkinter as tk
 from tkinter import ttk

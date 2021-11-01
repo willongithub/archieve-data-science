@@ -3,11 +3,6 @@
 # ==============================================================================
 """Entry point."""
 
-from gui import DataViewer
+from dataviwer import main
 
-def main():
-    app = DataViewer()
-    app.mainloop()
-
-if __name__ == '__main__':
-    main()
+main()
