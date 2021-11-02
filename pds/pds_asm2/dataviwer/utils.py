@@ -1,7 +1,7 @@
 # Programming for Data Science
 # Assignment 2 - Classification in Data Science
 # ==============================================================================
-"""Classification helper components."""
+"""Classifier helper components."""
 
 import numpy as np
 import pandas as pd
@@ -10,10 +10,12 @@ import matplotlib.pyplot as plt
 from sklearn.datasets import load_iris, load_breast_cancer, load_wine
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler, RobustScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
-from sklearn.metrics import ConfusionMatrixDisplay, classification_report, accuracy_score
+from sklearn.preprocessing import (StandardScaler, MinMaxScaler, MaxAbsScaler,
+                                   RobustScaler)
+from sklearn.metrics import (ConfusionMatrixDisplay, classification_report,
+                             accuracy_score)
 
 class Classifier:
     """Implement KNN and SVC classifier."""

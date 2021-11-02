@@ -3,8 +3,6 @@
 # ==============================================================================
 """GUI components."""
 
-from dataviwer.util import Classifier
-
 import tkinter as tk
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
@@ -18,8 +16,9 @@ SHELL = 600
 PADDING = 5
 
 class DataViewer(tk.Tk):
+    """Data viewer GUI."""
 
-    def __init__(self):
+    def __init__(self, **classifiers):
         super().__init__()
 
         self.dataset_knn = tk.StringVar(self)
@@ -42,8 +41,10 @@ class DataViewer(tk.Tk):
         self.c_options = (
             'auto', '0.001', '0.01', '0.1', '1.0', '10.0', '100.0')
 
-        self.classifier_knn = Classifier('knn')
-        self.classifier_svc = Classifier('svc')
+        # self.classifier_knn = Classifier('knn')
+        # self.classifier_svc = Classifier('svc')
+        self.classifier_knn = classifiers['knn']
+        self.classifier_svc = classifiers['svc']
     
         self.title("Data Viewer")
         self.resizable(False, False)
