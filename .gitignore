@@ -1,8 +1,8 @@
 !.gitignore
 .*
 **/data
-**/__pycache__
+**/assets
 **/*-env
 **/venv
-**/assets
+**/__pycache__
 **/rsconnect
