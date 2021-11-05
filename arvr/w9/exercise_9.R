@@ -45,8 +45,5 @@ my_scene$serve()
 # View local web content within RStudio
 rstudioapi::viewer("http://127.0.0.1:8080")
 
-# Shift + Click to open it in your web browser
-# http://127.0.0.1:8080
-
 # Stop serving a scene
 my_scene$stop()

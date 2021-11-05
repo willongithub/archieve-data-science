@@ -1,0 +1,134 @@
+---
+title: "AR/VR Data Analysis and Communication G (11524)"
+subtitle: Final Test
+author: ""
+date: "Semester 2 2021"
+output:
+  pdf_document:
+    highlight: breezedark
+    df_print: kable
+---
+
+```{r include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+# **Topic 3 – Data Visualisation and Communication.**
+```{r include = FALSE}
+require(tidyverse)
+require(ggplot2)
+```
+
+## Q11
+```{r}
+data <- tibble(
+  TG = c(
+    "ALL",
+    LETTERS[1:13]
+  ),
+  "2015" = c(
+    7.2,
+    2.6,
+    10.7,
+    9.2,
+    8.3,
+    7.9,
+    8.7,
+    3.8,
+    8.4,
+    5.1,
+    6.4,
+    9.2,
+    9.9,
+    5.6
+  ),
+  "2016" = c(
+    7.6,
+    3.1,
+    11.4,
+    9.7,
+    8.6,
+    8.2,
+    9.1,
+    4.1,
+    8.8,
+    5.6,
+    6.8,
+    9.7,
+    10.2,
+    6.0
+  ),
+  "2017" = c(
+    8.0,
+    3.5,
+    11.9,
+    10.2,
+    9.0,
+    8.5,
+    9.6,
+    4.4,
+    9.2,
+    6.0,
+    7.1,
+    10.1,
+    11.0,
+    6.2
+  ),
+  "2018" = c(
+    8.1,
+    3.8,
+    12.0,
+    10.4,
+    9.1,
+    10.1,
+    9.6,
+    4.6,
+    9.5,
+    6.2,
+    7.2,
+    10.2,
+    11.1,
+    6.3
+  ),
+  "2019" = c(
+    8.6,
+    4.5,
+    12.5,
+    10.9,
+    9.5,
+    11.3,
+    10.1,
+    5.1,
+    10.0,
+    6.7,
+    7.6,
+    10.5,
+    11.6,
+    6.7
+  )
+)
+
+glimpse(data)
+```
+
+### d)
+```{r}
+data %>%
+  gather("KEY", "VALUE", -TG) %>%
+    ggplot() +
+      geom_line(aes(KEY, VALUE, group = TG, color = TG), size = 1.5) +
+      geom_hline(
+        yintercept = 14, linetype = "dashed", color = "red", size = 1.5) +
+      geom_text(aes(1, 13.5, label = "High risk (14%)")) +
+      theme_minimal() +
+      theme(
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank()) +
+      labs(
+            x = "time (year)",
+            y = "cholesterol level (%)",
+            color = "Test group",
+            title = "Trend of Cholesterol Level (2015-2019)"
+      )
+```
+
