@@ -1,0 +1,78 @@
+---
+title: "AR/VR Data Analysis and Communication G (11524)"
+subtitle: Final Test
+author: ""
+date: "Semester 2 2021"
+output:
+  pdf_document:
+    highlight: breezedark
+    df_print: kable
+---
+
+```{r include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+# **Topic 2 – Data Analysis and Visualisation.**
+```{r include = FALSE}
+require(tidyverse)
+require(threejs)
+```
+
+## Q7
+### a)
+```{r}
+# Load the data.
+url <- paste0("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master",
+              "/csse_covid_19_data/csse_covid_19_daily_reports/11-03-2021.csv")
+data <- read_csv(url)
+
+# Look at the data.
+glimpse(data)
+```
+```{r}
+# Print the top 20 provinces/states on the console.
+data %>%
+  filter(!is.na(Province_State)) %>%
+  select(Province_State, Country_Region, Confirmed) %>%
+  arrange(desc(Confirmed)) %>%
+  head(20) 
+```
+
+### b)
+```{r}
+# Visualize the global connecting top 20 to canberra.
+top20 <- data %>%
+  filter(!is.na(Province_State)) %>%
+  select(Province_State, Country_Region, Confirmed, Lat, Long_) %>%
+  arrange(desc(Confirmed)) %>%
+  head(20) %>%
+  mutate(
+    orig_lat = -35.31,
+    orig_long = 149.12,
+    dest_lat = as.numeric(Lat),
+    dest_long = as.numeric(Long_)) %>%
+  select(orig_lat, orig_long, dest_lat, dest_long)
+
+globejs(
+  lat = top20$dest_lat,
+  long = top20$dest_long,
+  color = "red",
+  arcs = top20,
+  arcsHeight = 0.5,
+  arcsLwd = 1.0,
+  arcsColor = "yellow",
+  atmosphere = T)
+```
+
+### c)
+```{r}
+# Print the top 10 countries/regions on the console.
+data %>%
+  filter(!is.na(Province_State)) %>%
+  select(Country_Region, Confirmed) %>%
+  group_by(Country_Region) %>%
+  arrange(desc(Confirmed)) %>%
+  head(10)
+```
+
