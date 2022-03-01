@@ -118,23 +118,37 @@ figure("Name","Chocolete (Canny)"), imshow(rsChocoCanny);
 % Homework
 %% 2
 % Load imaged
-bgImg = imread("DINGO3_Background.jpeg");
-fgImg = imread("DINGO3_Frame0.jpeg");
+bgImg = imread("assets/DINGO3_Background.jpeg");
+ogImg = imread("assets/DINGO3_Frame0.jpeg");
 
 % Display images
 figure("Name","Background"), imshow(bgImg);
-figure("Name","Original"), imshow(fgImg);
+figure("Name","Original"), imshow(ogImg);
 
 %% 3
-diffImg = fgImg - bgImg;
+diffImg = double(ogImg) - int8(bgImg);
+% diffImg = ogImg - bgImg;
 
 %% 5
-overallMin = min(min(diffImg));
-overallMax = max(max(diffImg));
+allMin = double(min(min(diffImg)))/255.0;
+allMax = double(max(max(diffImg)))/255.0;
 
 %% 6
 % Remap
+% diffImg = uint8(diffImg - overallMin);
+% imhist(diffImg);
+
+rsImg = imadjust(diffImg, ...
+    [allMin(1) allMin(2) allMin(3); ...
+    allMax(1) allMax(2) allMax(3)], ...
+    []);
+
+figure("Name","Result"), imshow(rsImg);
 
 %% 7
+% figure("Name","Result"), imshow(rgb2gray(diffImg));
 figure("Name","Result"), imshow(diffImg);
+
+%%
+
 
