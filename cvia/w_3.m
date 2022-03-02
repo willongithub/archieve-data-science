@@ -115,7 +115,9 @@ rsChocoCanny = edge(ftImg, "canny");
 figure("Name","Chocolete (Sobel)"), imshow(rsChocoSobel);
 figure("Name","Chocolete (Canny)"), imshow(rsChocoCanny);
 
+%%
 % Homework
+
 %% 2
 % Load imaged
 bgImg = imread("assets/DINGO3_Background.jpeg");
@@ -126,18 +128,21 @@ figure("Name","Background"), imshow(bgImg);
 figure("Name","Original"), imshow(ogImg);
 
 %% 3
-diffImg = double(ogImg) - int8(bgImg);
-% diffImg = ogImg - bgImg;
+% diffImg = double(ogImg) - int8(bgImg);
+diffImg = ogImg - bgImg;
 
 %% 5
-allMin = double(min(min(diffImg)))/255.0;
-allMax = double(max(max(diffImg)))/255.0;
+% allMin = double(min(min(diffImg)))/255.0;
+% allMax = double(max(max(diffImg)))/255.0;
+% allMin = min(min(diffImg));
+% allMax = max(max(diffImg));
 
 %% 6
 % Remap
 % diffImg = uint8(diffImg - overallMin);
 % imhist(diffImg);
 
+% Rescale from sample code
 rsImg = imadjust(diffImg, ...
     [allMin(1) allMin(2) allMin(3); ...
     allMax(1) allMax(2) allMax(3)], ...
@@ -150,5 +155,13 @@ figure("Name","Result"), imshow(rsImg);
 figure("Name","Result"), imshow(diffImg);
 
 %%
+% Grayscale
+figure("Name","Result"), imshow(rgb2gray(diffImg));
 
-
+%%
+% Threshold
+for iter = 0.0:0.02:0.2
+    figure("Name",string(iter));
+    imshow(imbinarize(rgb2gray(diffImg), iter));
+    pause(0.05);
+end
