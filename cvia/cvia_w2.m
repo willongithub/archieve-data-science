@@ -2,10 +2,11 @@
 
 %% 
 % Load image
-ogImg = imread('chocolate_original.jpg');
-% figure(1);
-% imshow(ogImg), title("Original Image");
+ogImg = imread('assets/chocolate_original.jpg');
+figure(1);
+imshow(ogImg), title("Original Image");
 
+%%
 % Resize
 resizedImg = imresize(ogImg, [480 640]);
 % figure(2);
@@ -29,6 +30,7 @@ gsImg = im2gray(resizedImg);
 % figure(6);
 % imshow(gsImg), title("Grayscale Image");
 
+%%
 % Binary image
 levelScale = graythresh(gsImg);
 bwImg = imbinarize(gsImg, levelScale);
@@ -43,6 +45,7 @@ bwImg = imbinarize(gsImg, levelScale);
 %     pause(0.05); 
 % end
 
+%%
 % Hist of the image
 % figure(9);
 % imhist(blueImg);
@@ -59,9 +62,10 @@ blueHighImg = imbinarize(blueImg, th_high/255);
 % imshow(blueHighImg);
 
 blueMidImg = blueHighImg - blueLowImg;
-% figure(12);
-% imshow(blueMidImg);
+figure(12);
+imshow(blueMidImg);
 
+%%
 % Apply to grayscale image
 gsOgImg = im2gray(ogImg);
 gsLowImg = imbinarize(gsOgImg, th_low/255);

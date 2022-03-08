@@ -131,7 +131,7 @@ imshow(rcEdge);
 
 %% 4
 % Find circles
-[centers, radii, metric] = imfindcircles(rcGsImg);
+[centers, radii, metric] = imfindcircles(rcGsImg, [15 30]);
 
 centersStrong5 = centers(1:5,:); 
 radiiStrong5 = radii(1:5);
