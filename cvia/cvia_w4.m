@@ -70,25 +70,35 @@ figure("Name","Result");
 imshowpair(mask, result, 'montage');
 
 %% 12
+% @runbgs.m
 
 %% 16
-barImg = imread('assets/barcode.jpg');
+barImg = imread("assets/barcode.jpg");
+% figure(1), imshow(barImg);
 barGsImg = rgb2gray(barImg);
-rsBar = edge(barGsImg, "canny");
+rsBar = edge(barGsImg, 'Sobel');
 
-[H, theta, rho] = hough(barGsImg);
+figure(2);
+subplot(2,1,1); 
+imshow(barGsImg); 
+title("Monocolour Image");
+subplot(2,1,2);
+imshow(rsBar); 
+title("Edge Detected");
+
+[H, theta, rho] = hough(rsBar);
 
 %% 17
 % Display the original image. 
 subplot(2,1,1); 
 imshow(barImg); 
-title('Input Image'); 
- 
+title("Input Image"); 
+
 % Display the Hough matrix. 
 subplot(2,1,2); 
 imshow(imadjust(mat2gray(H)),'XData',theta,'YData',rho, ...
     'InitialMagnification','fit'); 
-title('Hough Transform of the Input Image'); 
+title("Hough Transform of the Input Image"); 
 xlabel('\theta'), ylabel('\rho'); 
 axis on, axis normal, hold on; 
 colormap(hot);
@@ -97,21 +107,38 @@ colormap(hot);
 % Homework
 
 %% 1
-rcImg = imread('assets/robocup_image1.jpg');
-barImg = imread('assets/barcode.jpg');
-
-rcGsImg = rgb2gray(rcImg);
-[rcH, rcT, rcR] = hough(rcGsImg);
-
-barGsImg = rgb2gray(barImg);
-[barH, barT, barR] = hough(barGsImg);
+rcImg = imread("assets/robocup_image1.jpg");
+figure("Name","input");
+imshow(rcImg);
+% barImg = imread("assets/barcode.jpg");
 
 %% 2
-rotatedEdgeImg = imrotate(rcImg, 45);
+rcRotated = imrotate(rcImg, 45);
+figure("Name","rotated");
+imshow(rcRotated);
+% barRotated = imrotate(barImg, 45);
 
 %% 3
+rcGsImg = rgb2gray(rcRotated);
+rcEdge = edge(rcGsImg, 'Sobel');
+figure("Name","edge detected");
+imshow(rcEdge);
+[rcH, rcT, rcR] = hough(rcEdge);
+
+% barGsImg = rgb2gray(barImg);
+% barEdge = edge(barGsImg, 'Sobel');
+% [barH, barT, barR] = hough(barEdge);
 
 %% 4
-% imfindcircles
+% Find circles
+[centers, radii, metric] = imfindcircles(rcGsImg);
 
+centersStrong5 = centers(1:5,:); 
+radiiStrong5 = radii(1:5);
+metricStrong5 = metric(1:5);
+
+viscircles(centersStrong5, radiiStrong5,'EdgeColor','y');
+
+%% 5
+% Help with colour
 
