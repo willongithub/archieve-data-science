@@ -1,0 +1,23 @@
+---
+title: "Applied Data Analysis Lab Week 5"
+output: html_notebook
+---
+
+# Exploring baseball data
+
+```{r include = F}
+require(tidyverse)
+```
+
+## Load dataset
+```{r}
+# batting <- Lahman::Batting
+batting <- read_csv("adas/w5_prj/raw_data/batting.csv")
+str(batting)
+```
+
+## Explore dataset
+```{r}
+head(batting)
+# tail(batting)
+```
