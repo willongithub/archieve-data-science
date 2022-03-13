@@ -1,5 +1,6 @@
 !.gitignore
 .*
+*.asv
 **/data
 **/assets
 **/*-env
