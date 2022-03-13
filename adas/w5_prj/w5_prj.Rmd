@@ -9,15 +9,174 @@ output: html_notebook
 require(tidyverse)
 ```
 
-## Load dataset
+## Load dataset (Step 1&2)
 ```{r}
 # batting <- Lahman::Batting
 batting <- read_csv("adas/w5_prj/raw_data/batting.csv")
 str(batting)
 ```
 
-## Explore dataset
+## Explore dataset (Step 3)
 ```{r}
 head(batting)
 # tail(batting)
+```
+
+## Filter by conditions (Step 4)
+```{r}
+batting_filtered <- batting %>%
+    filter(between(yearID, 2008, 2018))
+
+nrow(batting_filtered)
+
+batting %>%
+    filter(yearID == 2018)
+
+batting %>%
+    filter(yearID == 2018 | yearID == 2008)
+```
+## Summary (Step 5)
+```{r}
+batting_teams <- batting_filtered %>%
+    group_by(yearID, teamID) %>%
+    summarise_at(vars(c(AB:GIDP)), sum)
+```
+## Mutate (Step 6)
+```{r}
+batting_teams <- batting_teams %>%
+    mutate(X1B = H - HR - X2B - X3B)
+```
+## Distribution (Step 7)
+```{r}
+batting_teams %>%
+    ggplot(aes(x = R)) +
+        geom_histogram(
+            binwidth = 25,
+            colour = "black",
+            fill = "blue"
+        )
+```
+## Distribution with density curve (Step 8)
+```{r}
+batting_teams %>%
+    ggplot(aes(x = R)) +
+        geom_histogram(
+            mapping = aes(y = ..density..)
+            binwidth = 25,
+            colour = "black",
+            fill = "blue"
+        ) +
+        geom_density(
+            alpha = 0.3,
+            fill = "magenta"
+        )
+```
+## Scatter plot (Step 9)
+```{r}
+batting_teams %>%
+    ggplot(aes(x = X1B, y = R)) +
+        geom_point(
+            colour = "darkgreen",
+            shape = 4,
+            size = 2
+        )
+
+batting_teams %>%
+    ggplot(aes(x = X2B, y = R)) +
+        geom_point(
+            colour = "dodgerblue",
+            shape = 1,
+            size = 2
+        )
+
+batting_teams %>%
+    ggplot(aes(x = X3B, y = R)) +
+        geom_point(
+            colour = "purple",
+            shape = 5,
+            size = 3
+        )
+```
+## Scatter with colour gradient (Step 10)
+```{r}
+batting_teams %>%
+    ggplot(aes(x = X1B, y = R)) +
+        geom_point(aes(colour = AB, size = AB)) +
+        scale_color_gradient(low = "#56B1F7", high = "#132B43")
+
+batting_teams %>%
+    ggplot(aes(x = X2B, y = R)) +
+        geom_point(aes(colour = AB, size = AB)) +
+        scale_color_gradient(low = "#56B1F7", high = "#132B43")
+
+batting_teams %>%
+    ggplot(aes(x = X3B, y = R)) +
+        geom_point(aes(colour = AB, size = AB)) +
+        scale_color_gradient(low = "#56B1F7", high = "#132B43")
+```
+## On-Base Percentage (Step 11)
+```{r}
+batting_teams <- batting_teams %>%
+    mutate(OBP = (H + BB) / (AB + BB))
+```
+## OBP distribution (Step 12)
+```{r}
+batting_teams %>%
+    ggplot(aes(x = OBP)) +
+        geom_histogram(
+            binwidth = 0.01,
+            colour = "black",
+            fill = "magenta"
+        )
+```
+## OBP distribution with density curve (Step 13)
+```{r}
+batting_teams %>%
+    ggplot(aes(x = OBP)) +
+        geom_histogram(
+            mapping = aes(y = ..density..),
+            binwidth = 0.01,
+            colour = "black",
+            fill = "magenta"
+        ) +
+        geom_density(
+            alpha = 0.3,
+            fill = "dodgerblue"
+        )
+```
+## `if_else()` function (Step 14)
+```{r}
+batting_teams <- batting_teams %>%
+    mutate(
+        OBP_grouped = if_else(
+            OBP > mean(OBP),
+            "above_average_OBP",
+            "below_average_OBP"
+        )
+    )
+```
+## Boxplot (Step 15)
+```{r}
+batting_teams %>%
+    ggplot(aes(x = OBP_grouped, y = R)) +
+        geom_boxplot(aes(fill = OBP_grouped))
+```
+## Grouped distribution (Step 16)
+```{r}
+batting_teams %>%
+    ggplot(aes(x = R, colour = OBP_grouped)) +
+        geom_freqpoly()
+
+batting_teams %>%
+    ggplot(aes(x = R, fill = OBP_grouped)) +
+        geom_histogram(colour = "black", binwidth = 20) +
+        facet_wrap(~ OBP_grouped, nrow = 2) +
+        theme(legend.position = "none")
+```
+## Linear regression (Step 17)
+```{r}
+batting_teams %>%
+    ggplot(aes(x = OBP, y = R)) +
+        geom_point(colour = "dodgerblue", size = 2) +
+        geom_smooth(method = "lm", colour = "magenta")
 ```
