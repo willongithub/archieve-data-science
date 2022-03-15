@@ -1,6 +1,7 @@
 % Function to compute the SAD similarity measure 
 function [SAD_values, tmpHeightHalf, tmpWidthHalf, imgSize] = ... 
     computeSAD(inputImg, tmpImg) 
+    
     % Determine size of input image and template image 
     imgSize = size(inputImg); 
     tmpSize = size(tmpImg); 
@@ -18,4 +19,5 @@ function [SAD_values, tmpHeightHalf, tmpWidthHalf, imgSize] = ...
                   - tmpImg), 'all'); 
       end 
     end
+    
 end
