@@ -22,38 +22,43 @@ subplot(2, 3, 4);
 imshow(rcGray);
 title('Grayscale Image');
 
-%% 4 Harris Corners
+% 4 Harris Corners
 hrsConr = detectHarrisFeatures(rcGray);
 subplot(2, 3, 2);
 imshow(rcGray);
+title('Harris Corners');
 hold on;
-plot(hrsConr.selectStrongest(50));
+plot(hrsConr.selectStrongest(10));
 hold off;
 
-%% 6 HOG
+% 6 HOG
 [~, hogVis] = extractHOGFeatures(rcGray, 'CellSize', [16 16]);
 subplot(2, 3, 3);
 imshow(rcGray);
+title('HOG');
 hold on;
 plot(hogVis);
 hold off;
 
-%% 7 SIFT
+% 7 SIFT
 siftPoints = detectSIFTFeatures(rcGray);
 subplot(2, 3, 5);
 imshow(rcGray);
+title('SIFT');
 hold on;
-plot(siftPoints.selectstrongest(50));
+plot(siftPoints.selectStrongest(10));
 hold off;
 
-%% 8 SURF
+% 8 SURF
 surfPoints = detectSURFFeatures(rcGray);
 subplot(2, 3, 6);
 imshow(rcGray);
+title('SURF');
 hold on;
-plot(surfPoints.selectstrongest(50));
+plot(surfPoints.selectStrongest(10));
 hold off;
 
 %% 10
+% @digitclassifier.m
 
 %% 12
