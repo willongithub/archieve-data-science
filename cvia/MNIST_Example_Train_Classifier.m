@@ -6,8 +6,8 @@ clear all;
 clc;
 
 % Load training data
-trainImageFilename = 'train-images.idx3-ubyte';
-trainLabelFilename = 'train-labels.idx1-ubyte';
+trainImageFilename = 'assets/train-images.idx3-ubyte';
+trainLabelFilename = 'assets/train-labels.idx1-ubyte';
 
 % Process files
 [Xtrain,LabelTrain] = processMNISTdata(trainImageFilename,trainLabelFilename);
@@ -51,8 +51,8 @@ Cmdl = fitcecoc(NewX,LabelTrain,'Learners',t, ...
 
 %% Evaluate Classifier
 % Load the test data
-testImageFilename = 't10k-images.idx3-ubyte';
-testLabelFilename = 't10k-labels.idx1-ubyte';
+testImageFilename = 'assets/t10k-images.idx3-ubyte';
+testLabelFilename = 'assets/t10k-labels.idx1-ubyte';
 [Xtest,LabelTest] = processMNISTdata(testImageFilename,testLabelFilename);
 
 % Calculate the classification loss when applying the trained model to the
