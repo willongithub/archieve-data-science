@@ -1,4 +1,4 @@
-% Week 7 MNIST Handwritten Digits classification using SIFT
+% Week 7 MNIST Handwritten Digits classification using MSER
 
 %%
 syntheticDir   = fullfile(toolboxdir('vision'),'visiondata','digits','synthetic');
@@ -37,26 +37,30 @@ subplot(1,2,2)
 imshow(processedImage)
 
 %%
-% Using SIFT features
 img = im2gray(readimage(trainingSet, 206));
 
-% Extract SIFT features
-sift = detectSIFTFeatures(img);
-[features, ~] = extractFeatures(img, sift);
+% Extract MSER features
+mser = detectMSERFeatures(img);
+[~, points] = extractFeatures(img, mser, "Upright", true);
 
 % Show the original image
 figure(3);
-subplot(2,3,1:3); imshow(img);
+imshow(img);
 
-% Visualize the SIFT features
+% Set feature size
+size = 6;
+max = 10;
+
+% Visualize the MSER features
 hold on;
-plot(sift.selectStrongest(50));
+plot(points.selectStrongest(max),"ShowOrientation",true);
 hold off;
 
 %%
 numImages = numel(trainingSet.Files);
-dim = size(features);
-trainingFeatures = zeros(numImages,dim(1),dim(2));
+FeatureSize = size*max;
+trainingFeatures = zeros(numImages,FeatureSize,'single');
+
 for i = 1:numImages
     img = readimage(trainingSet,i);
     
@@ -66,10 +70,22 @@ for i = 1:numImages
     img = imbinarize(img);
 
     % Extract features.
-    sift = detectSIFTFeatures(img);
-    [features, ~] = extractFeatures(img, sift);
+    mser = detectMSERFeatures(img);
+    [~, points] = extractFeatures(img, mser);
+    points = points.selectStrongest(max);
+
+    if ~isempty(points) 
+        for p = 0:length(points)-1  
+            l = points(p+1).Location; 
+            trainingFeatures(i, (p*size)+1) = l(1);
+            trainingFeatures(i, (p*size)+2) = l(2);
+            trainingFeatures(i, (p*size)+3) = points(p+1).Scale;  
+            trainingFeatures(i, (p*size)+4) = points(p+1).SignOfLaplacian;
+            trainingFeatures(i, (p*size)+5) = points(p+1).Orientation;
+            trainingFeatures(i, (p*size)+6) = points(p+1).Metric;
+        end 
+    end
     
-    trainingFeatures(i, :) = features;
 end
 
 % Get labels for each image.
@@ -80,12 +96,10 @@ trainingLabels = trainingSet.Labels;
 classifier = fitcecoc(trainingFeatures, trainingLabels);
 
 %%
-%
 % Evaluate (test) the classifier on data that was not used during training
-%
 
 [testFeatures, testLabels] = ...
-    helperExtractSIFTFeaturesFromImageSet(testSet, hogFeatureSize, cellSize);
+    helperExtractMSERFeaturesFromImageSet(testSet, size, max);
 
 % Make class predictions using the test features.
 predictedLabels = predict(classifier, testFeatures);

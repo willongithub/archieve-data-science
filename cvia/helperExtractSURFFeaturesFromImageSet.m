@@ -1,5 +1,5 @@
-function [features, setLabels] = helperExtractSIFTFeaturesFromImageSet(imds, size, max)
-% Extract SIFT features from an imageDatastore.
+function [features, setLabels] = helperExtractSURFFeaturesFromImageSet(imds, size, max)
+% Extract SURF features from an imageDatastore.
 
 setLabels = imds.Labels;
 numImages = numel(imds.Files);
@@ -16,7 +16,7 @@ for i = 1:numImages
     img = imbinarize(img);
 
     % Extract features.
-    sift = detectSIFTFeatures(img);
+    sift = detectSURFFeatures(img);
     [~, points] = extractFeatures(img, sift);
     points = points.selectStrongest(max);
 
@@ -26,10 +26,9 @@ for i = 1:numImages
             features(i, (p*size)+1) = l(1);
             features(i, (p*size)+2) = l(2);
             features(i, (p*size)+3) = points(p+1).Scale;  
-            features(i, (p*size)+4) = points(p+1).Octave;
+            features(i, (p*size)+4) = points(p+1).SignOfLaplacian;
             features(i, (p*size)+5) = points(p+1).Orientation;
             features(i, (p*size)+6) = points(p+1).Metric;
-            features(i, (p*size)+7) = points(p+1).Layer;
         end 
     end
 
