@@ -1,0 +1,16 @@
+---
+title: "Applied Data Analysis Lab Week 9"
+output: html_notebook
+---
+
+# Modelling baseball data
+
+```{r include = F}
+require(tidyverse)
+```
+
+```{r}
+dataset <- read_csv("adas/assets/2019_nfl_qb_data.csv")
+str(dataset)
+```
+
