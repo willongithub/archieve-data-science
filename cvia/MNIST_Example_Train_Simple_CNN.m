@@ -3,7 +3,7 @@
 
 close all;
 clear all;
-clc;
+% clc;
 
 %% Load training data
 % Define file names
@@ -46,9 +46,9 @@ layers = [
 
 %% Train the CNN model (aka training the network)
 % Define training parameters
-miniBatchSize = 2000;
+miniBatchSize = 1000;
 options = trainingOptions( 'sgdm',...
-    'MaxEpochs', 25,...
+    'MaxEpochs', 15,...
     'InitialLearnRate',0.01,...
     'MiniBatchSize', miniBatchSize,...
     'Plots', 'training-progress');
@@ -58,7 +58,7 @@ net = trainNetwork(Xtrain, LabelTrain, layers, options);
 
 %% Test the accuracy of the trained model on the test data
 predLabelsTest = net.classify(Xtest);
-accuracy = sum(predLabelsTest == LabelTest) / numel(LabelTest)
+accuracy = sum(predLabelsTest == LabelTest) / numel(LabelTest);
 
 % Show confusion matrix in figure
 [m, order] = confusionmat(LabelTest, predLabelsTest);
