@@ -9,8 +9,149 @@ output: html_notebook
 require(tidyverse)
 ```
 
+## Load the data
 ```{r}
 dataset <- read_csv("adas/assets/2019_nfl_qb_data.csv")
 str(dataset)
 ```
+```{r}
+head(dataset)
+```
+```{r}
+tail(dataset)
+```
 
+## Transform data
+```{r}
+dataset <- dataset %>%
+    filter(games_started >= 5) %>%
+    mutate(win_percentage = win/games_started*100)
+```
+
+## Exploratory data Analysis
+```{r}
+dataset %>%
+    ggplot(aes(x = passer_rating, y = win_percentage)) +
+        geom_point(colour = "dodgerblue") +
+        geom_smooth(method = "lm", colour = "magenta", se = FALSE) +
+        geom_hline(yintercept = 50, colour = "black", linetype = "dashed")
+```
+```{r}
+with(dataset, cor(x = passer_rating, y = win_percentage))
+```
+
+## Simple linear regression
+```{r}
+require(broom)
+fit <- lm(win_percentage ~ passer_rating, data = dataset)
+tidy(fit, conf.int = TRUE)
+```
+```{r}
+summary(fit)
+```
+
+## Independance
+```{r}
+car::durbinWatsonTest(fit)
+```
+
+## Outliers
+```{r}
+std_res <- rstandard(fit)
+points <- 1:length(std_res)
+
+ggplot(aes(x = points, y = std_res)) +
+    geom_point() +
+    ylim(c(-4,4)) +
+    geom_hline(yintercept = c(-3, 3), colour = "red", linetype = "dashed")
+```
+
+## Leverage points
+```{r}
+hats <- hatvalues(fit)
+
+ggplot(aes(x = points, y = hats)) +
+    geom_point()
+```
+```{r}
+hat_labels <- if_else(hats >= 0.10, paste(points), "")
+
+ggplot(aes(x = points, y = hats)) +
+    geom_point() +
+    geom_text(aes(label = hat_labels), nudge_y = 0.005)
+```
+```{r}
+dataset %>%
+    ggplot(aes(x = passer_rating, y = win_percentage)) +
+        geom_point(colour = "dodgerblue") +
+        geom_smooth(method = "lm", colour = "magenta", se = FALSE) +
+        geom_hline(yintercept = 50, colour = "black", linetype = "dashed") +
+        geom_text(aes(label = hat_labels), nudge_x = 1)
+```
+
+## Influential points
+```{r}
+cook <- cooks.distance(fit)
+
+ggplot(aes(x = points, y = cook)) +
+    geom_point()
+```
+```{r}
+cook_labels <- if_else(cook >= 0.015, paste(points), "")
+```
+```{r}
+cook_labels <- if_else(cook >= 0.05, paste(points), "")
+
+ggplot(aes(x = points, y = cook)) +
+    geom_point() +
+    geom_text(aes(label = cook_labels), nudge_x = 1)
+```
+```{r}
+dateset %>%
+    ggplot(aes(x = passer_rating, y = win_percentage)) +
+        geom_point(colour = "dodgerblue") +
+        geom_smooth(method = "lm", colour = "magenta", se = FALSE) +
+        geom_hline(yintercept = 50, colour = "black", linetype = "dashed") +
+        geom_text(aes(label = cook_labels), nudge_x = 1)
+```
+```{r}
+# create new df without the high influence points
+outliers <- c(28, 32, 34, 35, 36) # store case numbers to remove in object 'outliers'
+filtered_dateset <- dateset %>%
+    filter(!case_no %in% outliers)  # filter if case_no is not (!) %in% outliers
+```
+```{r}
+# re-run the linear regression with filtered_df
+fit2 <- lm(win_percentage ~ passer_rating, data = filtered_dateset)
+tidy(fit2, conf.int = TRUE)
+```
+```{r}
+summary(fit2)
+```
+```{r}
+filtered_dateset %>%
+    ggplot(data = filtered_df, aes(x = passer_rating, y = win_percentage)) +
+        geom_point(colour = "dodgerblue") +
+        geom_smooth(method = "lm", colour = "magenta", se = FALSE) +
+        geom_hline(yintercept = 50, colour = "black", linetype = "dashed")
+```
+
+## Homoscedasticity
+```{r}
+res <- residuals(fit)
+fitted <- predict(fit)  # or can use fitted()
+
+ggplot(aes(x = fitted, y = res)) +
+    geom_point(colour = "dodgerblue") + 
+    geom_hline(yintercept = 0, colour = "red", linetype = "dashed")
+```
+
+## Normality
+```{r}
+ggplot(aes(x = res)) +
+    geom_histogram(colour = "black", fill = "dodgerblue", binwidth = 10)
+```
+```{r}
+ggplot(aes(sample = res)) +
+  stat_qq() + stat_qq_line()
+```
