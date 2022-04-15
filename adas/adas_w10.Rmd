@@ -1,0 +1,109 @@
+---
+title: "Applied Data Analysis Lab Week 10"
+output: html_notebook
+---
+
+# Applying multiple linear regression to estimate VO2max
+
+```{r include = F}
+require(tidyverse)
+require(readxl)
+```
+## Load data
+```{r}
+dataset <- read_excel("assets/vo2-max_data.xlsx")
+str(dataset)
+```
+```{r}
+head(dataset)
+# tail(dataset)
+```
+## Transform data
+```{r}
+dataset$gender <- as.factor(dataset$gender)
+```
+## EDA
+```{r}
+dataset %>%
+    ggplot(aes(x = age, y = vo2_max)) +
+        geom_point() +
+        geom_smooth(method = "lm")
+```
+```{r}
+dataset %>%
+    ggplot(aes(x = weight, y = vo2_max)) +
+        geom_point() +
+        geom_smooth(method = "lm")
+```
+```{r}
+dataset %>%
+    ggplot(aes(x = heart_rate, y = vo2_max)) +
+        geom_point() +
+        geom_smooth(method = "lm")
+```
+```{r}
+dataset %>%
+    ggplot(aes(x = gender, y = vo2_max)) +
+        geom_boxplot(aes(fill = gender))
+```
+### with gender
+```{r}
+dataset %>%
+    ggplot(aes(x = age, y = vo2_max, colour = gender)) +
+        geom_point() +
+        geom_smooth(method = "lm")
+```
+```{r}
+dataset %>%
+    ggplot(aes(x = weight, y = vo2_max, colour = gender)) +
+        geom_point() +
+        geom_smooth(method = "lm")
+```
+```{r}
+dataset %>%
+    ggplot(aes(x = heart_rate, y = vo2_max, colour = gender)) +
+        geom_point() +
+        geom_smooth(method = "lm")
+```
+### check multicollinearity
+```{r}
+dataset %>%
+    pairs(formula = ~ age + weight + heart_rate)
+```
+## Multiple linear regression
+```{r}
+library(broom)
+model <- dataset %>%
+    lm(vo2_max ~ age + weight + heart_rate + gender)
+tidy(model, conf.int = TRUE)
+```
+```{r}
+summary(model)
+```
+## Independence
+```{r}
+car::durbinWatsonTest(model)
+```
+## Outliers
+```{r}
+std_res <- rstandard(fit)
+points <- 1:length(std_res)
+
+ggplot(aes(x = points, y = std_res)) +
+    geom_point() +
+    ylim(c(-4,4)) +
+    geom_hline(yintercept = c(-3, 3), colour = "red", linetype = "dashed")
+```
+```{r}
+res_labels <- if_else(abs(std_res) >= 2.5, paste(points), "")
+
+ggplot(aes(x = points, y = std_res, label = res_labels)) +
+    geom_point() +
+    geom_text(nudge_x = 2) +
+    ylim(c(-4,4)) +
+    geom_hline(yintercept = c(-3, 3), colour = "red", linetype = "dashed")
+```
+## Leverage points
+
+
+
