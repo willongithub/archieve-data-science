@@ -42,7 +42,7 @@ testImageDS = imageDatastore(fullfile("assets\CUB_200_2011_Subset20classes\", "i
     "FileExtensions", ".jpg"); 
 
 %% Transform the Image into Target Size
-targetSize = [224, 224];  
+targetSize = [280, 280];  
 
 % training set
 trainingImageDS = transform(trainingImageDS, ... 
@@ -59,7 +59,7 @@ testImageDS = transform(testImageDS, ...
 %% Build Simple CNN Classifier
 % network architecture
 layers = [
-    imageInputLayer([28 28 1])
+    imageInputLayer([280 280 3])
     
     convolution2dLayer(3,8,'Padding','same')
     batchNormalizationLayer
@@ -80,6 +80,11 @@ layers = [
     fullyConnectedLayer(10)
     softmaxLayer
     classificationLayer];
+
+% setup GPU
+disp(gpuDevice(1))
+device = gpuDevice(1);
+reset(device);  % Clear previous values that might still be on the GPU
 
 % training options
 options = trainingOptions('sgdm', ...
