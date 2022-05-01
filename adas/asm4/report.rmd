@@ -1,4 +1,16 @@
 ---
-title: "Applied Data Analysis in Sport Assessment 4: Reproducible Data Analysis Project"
-output: html_notebook
+title: "Applied Data Analysis in Sport"
+subtitle: " Assessment 4: Reproducible Data Analysis Project"
+author: ""
+date: "Semester 1 2022"
+output:
+  pdf_document:
+    theme: readable
+    highlight: breezedark
+    df_print: kable
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE)
+```
+
