@@ -1,7 +1,7 @@
 ---
 title: "Applied Data Analysis in Sport"
 subtitle: " Assessment 4: Reproducible Data Analysis Project"
-author: ""
+author: "Data Man"
 date: "Semester 1 2022"
 output:
   pdf_document:
@@ -13,4 +13,67 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning=FALSE)
 ```
+```{r}
+require(tidyverse)
+require(ggplot2)
+```
 
+
+# Introduction
+## a) background
+## b) case description
+## c) project target
+## d) justification and importance
+
+# Reading and cleaning the raw data
+```{r}
+# Unzip the raw data file.
+file_dir <- "data/project-data/"
+
+if (!dir.exists(file_dir)) {
+  unzip("data/raw/project-data.zip", exdir = "data")
+}
+
+# Load the raw datasets.
+filenames <- list.files(file_dir)
+
+for (name in filenames) {
+  assign(
+    str_extract(name, "(?<=a_).+(?=\\.)"),
+    read_csv(paste0(file_dir, name))
+  )
+}
+```
+```{r}
+str(df_salaries)
+```
+```{r}
+str(df_player_stat)
+```
+```{r}
+str(df_team_stat_1)
+```
+```{r}
+str(df_team_stat_2)
+```
+```{r}
+str(df_payroll)
+```
+
+
+# Exploratory analysis
+## a) checking for errors and missings
+## b) checking for variable distributions
+## c) checking for variable relationships
+## d) justification about modelling
+
+# Data modelling and results
+## a) modelling
+## b) assumption checking
+## c) output and interpretation
+
+# Player recommendations
+
+# Summary
+
+# Reference
