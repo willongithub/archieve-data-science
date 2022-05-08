@@ -1,7 +1,7 @@
 ---
 title: "Applied Data Analysis in Sport"
-subtitle: " Assessment 4: Reproducible Data Analysis Project"
-author: "Siqi (Liam) Wu"
+subtitle: "Assessment 4: Reproducible Data Analysis Project"
+author: ""
 date: "Semester 1 2022"
 output:
   html_document:
