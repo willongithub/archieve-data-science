@@ -1,10 +1,10 @@
 ---
 title: "Applied Data Analysis in Sport"
 subtitle: " Assessment 4: Reproducible Data Analysis Project"
-author: "Data Man"
+author: "Siqi (Liam) Wu"
 date: "Semester 1 2022"
 output:
-  pdf_document:
+  html_document:
     theme: readable
     highlight: breezedark
     df_print: kable
@@ -13,67 +13,413 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning=FALSE)
 ```
-```{r}
+```{r message=FALSE, include=FALSE}
 require(tidyverse)
 require(ggplot2)
+require(broom)
+require(car)
 ```
 
 
 # Introduction
-## a) background
-## b) case description
-## c) project target
+## a) case description
+  Basketball consist of five players on the floor on each side. There are: Center, Power Forward, Small Forward, Shooting Guard, Point Guard. The center is the core of defence. The power forward will help center near the paint area. The small forward and shooting guard are the major scoring players for most teams. The point guard is the brain of the team and the job is to connect all the others in offence.
+
+## b) background info
+  In the recent season of 2018-19, our team - Chicago Bulls placed 27th out of 30. This is not what we want. We need a significant overhaul to improve our performance. With a budget of $118 million for the next season, we need to find best players for the win.
+
+## c) project objectives
+  This project tries to identify the most important stats for a team to win. And then, we will try to find the players that can best provide these values for the team based on the analysis.
+
 ## d) justification and importance
+  Without proper analysis, we may fall into the trap of chasing the highest pay players instead of the players that can really contribute to the win.
 
 # Reading and cleaning the raw data
-```{r}
-# Unzip the raw data file.
-file_dir <- "data/project-data/"
+## a) description of datasets
+- NBA player statistics (2018-19): `2018-19_nba_player-statistics.csv` [source](https://www.basketball-reference.com/leagues/NBA_2019_totals.html)
 
-if (!dir.exists(file_dir)) {
+- NBA player salaries (2018-19): `2018-19_nba_player-salaries.csv` [source](https://hoopshype.com/salaries/) 
+
+- NBA team payrolls (2019-20): `2019-20_nba_team-payroll.csv` [source](https://hoopshype.com/salaries/players/) 
+
+- NBA team advanced statistics (2018-19): `2018-19_nba_team-statistics_1.csv` [source](https://www.basketball-reference.com/leagues/NBA_2019.html)
+
+- NBA team total statistics (2018-19): `2018-19_nba_team-statistics_2.csv` [source](https://www.basketball-reference.com/leagues/NBA_2019.html)
+
+## b) load the raw datasets into R environment
+```{r message=FALSE}
+# Unzip the raw data file under data folder.
+unzipped <- "data/project-data/" # dir of unzipped file
+
+if (!dir.exists(unzipped)) {
   unzip("data/raw/project-data.zip", exdir = "data")
 }
 
-# Load the raw datasets.
-filenames <- list.files(file_dir)
+# Load the unzipped raw datasets.
+filenames <- list.files(unzipped)
 
 for (name in filenames) {
+  # extract and assign tibble names from files
   assign(
-    str_extract(name, "(?<=a_).+(?=\\.)"),
-    read_csv(paste0(file_dir, name))
+    str_replace_all(str_extract(name, "(?<=a_).+(?=\\.)"), "-", "_"),
+    read_csv(paste0(unzipped, name))
   )
 }
 ```
-```{r}
-str(df_salaries)
-```
-```{r}
-str(df_player_stat)
-```
-```{r}
-str(df_team_stat_1)
-```
-```{r}
-str(df_team_stat_2)
-```
-```{r}
-str(df_payroll)
-```
+## c) check and clean the raw data
+```{r eval=FALSE}
+# Check the datasets
+glimpse(player_salaries)
+view(player_salaries)
 
+glimpse(player_statistics)
+view(player_statistics)
+
+glimpse(team_statistics_1)
+view(team_statistics_1)
+
+glimpse(team_statistics_2)
+view(team_statistics_2)
+
+glimpse(team_payroll)
+view(team_payroll)
+```
+We can learn from previous part that the datasets can be combined into two tibbles for the players and one for the teams.
+```{r}
+# Combine datasets for the players.
+player_data <- 
+  # join by player names column
+  left_join(
+    player_statistics,
+    player_salaries,
+    by = "player_name",
+  ) %>% 
+  # rename columns for naming consistency and other issues
+  rename(
+    Player = player_name,
+    Salary = salary,
+    FGP = "FG%",
+    LS = "3P", # name 3-pointer as long shot (LS)
+    LSA = "3PA",
+    LSP = "3P%",
+    NS = "2P", # name 2-pointer as normal shot (NS)
+    NSA = "2PA",
+    NSP = "2P%",
+    EFG = "eFG%",
+    FTP = "FT%"
+  ) %>% 
+  # drop redundant column
+  select(- "player_id")
+
+# Clean and combine datasets for the teams.
+team_payroll <-
+  # rename columns for naming consistency
+  team_payroll %>%
+    rename(
+      Team = team,
+      Salary = salary
+    )
+  
+team_data <-
+  # join by team names column
+  full_join(
+    team_statistics_2,
+    team_statistics_1,
+    by = "Team",
+  ) %>%
+  # rename ambiguous columns and fix other issues
+  rename(
+    Rk_ttl = Rk.x, # total stats ranking
+    Rk_adv = Rk.y, # advanced stats ranking
+    FGP = "FG%",
+    LS = "3P", # name 3-pointer as long shot (LS)
+    LSA = "3PA",
+    LSP = "3P%",
+    NS = "2P", # name 2-pointer as normal shot (NS)
+    NSA = "2PA",
+    NSP = "2P%",
+    EFG = "eFG%",
+    FTP = "FT%",
+    LSAr = "3PAr",
+    TSP = "TS%",
+    TOVP = "TOV%",
+    ORBP = "ORB%",
+    DRBP = "DRB%",
+    FTOFGA = "FT/FGA"
+  ) %>% 
+  # drop empty columns
+  select(- c(47, 48, 49))
+
+# Save them as csv file into `/tidy` folder of processed data.
+dir.create("data/tidy/")
+write_csv(team_data, file = "data/tidy/2018-19_team.csv")
+write_csv(player_data, file = "data/tidy/2018-19_player.csv")
+```
 
 # Exploratory analysis
 ## a) checking for errors and missings
-## b) checking for variable distributions
-## c) checking for variable relationships
+```{r include=FALSE}
+# Check player dataset
+glimpse(player_data)
+table(is.na(player_data))
+colSums(is.na(player_data))
+view(player_data)
+
+player_data <- 
+  # drop players with no salary data
+  player_data %>% 
+  drop_na(Salary)
+
+player_data <- 
+  # replace NAs of shot percentage with 0.0
+  player_data %>% 
+  replace(is.na(player_data), 0.0)
+
+# Check team dataset
+glimpse(team_data)
+table(is.na(team_data))
+view(team_data)
+```
+  For the player dataset, there are NAs in certain columns of stats and salary. For the stats, those NAs come from percentage of different types of shots, it means they made no shot for this type. A defence focused centre could have made no long shot and a rookie could have got no free-throw for a whole season, which is normal. So they are not errors. The eFG% is a combo metric of all shots made, it can be not available if there is no shots made at all. Those NAs are replace with 0s. For salary, the NAs could mean the contracts had been broken or other issues. Since it is not a large number, in this project, we can treat them as outliers and drop them. There is no NAs in the team dataset.
+
+## b) select important variables in team stats
+  To find best players, it is important to find the stats that are important to the wins. In this case, promising ones are selected to investigate: PTS (points scored), EFG (effective field goal percentage), AST (assist), TRB (total rebounds). They are common stats to evaluate performance of a game or a player.
+
+```{r}
+team_data %>%
+  select(W, MOV, PTS, EFG, AST, TRB) %>%
+  pairs(col = "red", pch = 18, main = "Pair Plot of Important Stats")
+```
+
+## c) checking for variable distributions
+```{r include=FALSE}
+# Distribution of points scored
+ggplot(data = team_data, aes(x = PTS)) +
+  geom_histogram(
+    mapping = aes(y = ..density..),
+    binwidth = 150, colour = "black", fill = "red") +
+    geom_density(alpha = 0.3, fill = "yellow") +
+    labs(
+      title = "Distribution of Points Scored (PTS)",
+      caption = "Data sourced from: www.basketball-reference.com",
+      y = "",
+    )
+```
+```{r}
+# Distribution of effective field goal percentage
+ggplot(data = team_data, aes(x = EFG)) +
+  geom_histogram(
+    mapping = aes(y = ..density..),
+    bins = 20, colour = "black", fill = "red") +
+    geom_density(alpha = 0.3, fill = "yellow") +
+    labs(
+      title = "Distribution of Effective Field Goal Percentage (eFG%)",
+      caption = "Data sourced from: www.basketball-reference.com",
+      y = "",
+    )
+```
+```{r}
+# Distribution of assists
+ggplot(data = team_data, aes(x = AST)) +
+  geom_histogram(
+    mapping = aes(y = ..density..),
+    bins = 15, colour = "black", fill = "red") +
+    geom_density(alpha = 0.3, fill = "yellow") +
+    labs(
+      title = "Distribution of Assists (AST)",
+      caption = "Data sourced from: www.basketball-reference.com",
+      y = "",
+    )
+```
+```{r}
+# Distribution of total rebounds
+ggplot(data = team_data, aes(x = TRB)) +
+  geom_histogram(
+    mapping = aes(y = ..density..),
+    bins = 15, colour = "black", fill = "red") +
+    geom_density(alpha = 0.3, fill = "yellow") +
+    labs(
+      title = "Distribution of Total Rebounds (TRB)",
+      caption = "Data sourced from: www.basketball-reference.com",
+      y = "",
+    )
+```
+
+## c) checking for differences between groups
+```{r include=FALSE}
+team_data <-
+  team_data %>%
+  mutate(
+    pts_group = if_else(PTS > mean(PTS), "above avg", "below avg"),
+    efg_group = if_else(EFG > mean(EFG), "above avg", "below avg"),
+    ast_group = if_else(AST > mean(AST), "above avg", "below avg"),
+    trb_group = if_else(TRB > mean(TRB), "above avg", "below avg"),
+  )
+```
+```{r}
+# Comparison between groups of points scored
+ggplot(data = team_data, aes(x = pts_group, y = W)) +
+  geom_boxplot(aes(fill = pts_group)) +
+    labs(
+      title = "Comparison between Points Groups vs Wins",
+      caption = "Data sourced from: www.basketball-reference.com",
+      x = "points scored",
+      y = "wins",
+      fill = "Point Groups"
+    )
+```
+```{r}
+# Comparison between groups of effective field goal percentage
+ggplot(data = team_data, aes(x = efg_group, y = W)) +
+  geom_boxplot(aes(fill = efg_group)) +
+    labs(
+      title = "Comparison between eFG% vs Wins",
+      caption = "Data sourced from: www.basketball-reference.com",
+      x = "effective field goal (%)",
+      y = "wins",
+      fill = "eFG% Group"
+    )
+```
+```{r}
+# Comparison between groups of assists
+ggplot(data = team_data, aes(x = ast_group, y = W)) +
+  geom_boxplot(aes(fill = ast_group)) +
+    labs(
+      title = "Comparison between Assist Groups vs Wins",
+      caption = "Data sourced from: www.basketball-reference.com",
+      x = "assists",
+      y = "wins",
+      fill = "Assist Groups"
+    )
+```
+```{r}
+# Comparison between groups of total rebounds
+ggplot(data = team_data, aes(x = trb_group, y = W)) +
+  geom_boxplot(aes(fill = trb_group)) +
+    labs(
+      title = "Comparison between Rebound Groups vs Wins",
+      caption = "Data sourced from: www.basketball-reference.com",
+      x = "total rebounds",
+      y = "wins",
+      fill = "Rebound Groups"
+    )
+```
 ## d) justification about modelling
+  From the exploratory analysis we can see the variables selected shows significant contribution to wins of corresponding teams. It is appropriate to fit a linear model to further investigate their relationship.
+  Once we identify the most important stats, we can locate best player for the team.
 
 # Data modelling and results
 ## a) modelling
+```{r}
+# Fit linear regression with multiple predictors
+lm_data <- team_data %>% select(W, PTS, EFG, AST, TRB)
+
+team_fit <- lm(W ~ ., data = lm_data)
+tidy(team_fit, conf.int = T)
+```
+
 ## b) assumption checking
+```{r}
+# Check multicollinearity between variables
+sqrt(vif(team_fit))
+```
+
+```{r}
+# Using the model to predict expected wins
+lm_data <- lm_data %>% mutate(exp_win = predict(team_fit, newdata = lm_data))
+
+lm_data %>%
+    ggplot(aes(x = exp_win, y = W)) +
+        geom_point(colour = "dodgerblue") +
+        geom_abline(linetype = "dashed", colour = "black") +
+        labs(
+          title = "Model Testing",
+          caption = "Data sourced from: www.basketball-reference.com",
+          x = "expected wins",
+          y = "wins"
+        )
+```
+
 ## c) output and interpretation
+  First, in the fitted model, it seems the relationship is not strong enough. From the variance inflation factor test, the results tells us that these variables had no correlation with each other. Finally, in the Model Testing plot between expected wins and actual wins, we can see the model works well. They are not very strong, but the contributing factor of a game can be complex. And the model works well enough to prove the logic.
+  From this result, we can recommend players that can best contribute to these stats for the team. The recommendations will be based on their abilities to achieve those related stats.
 
 # Player recommendations
+```{r include=FALSE}
+# Modify the data tibble for ranking
+rank_data <-
+  player_data %>% 
+  select(Player, Pos, G, PTS, EFG, AST, TRB, Salary) %>% 
+  mutate(
+    PTSPG = PTS/G,
+    ASTPG = AST/G,
+    TRBPG = TRB/G,
+  )
+```
+```{r}
+# Ranking for Center
+rank_data %>% 
+  filter(Pos == "C") %>% 
+  arrange(desc(PTSPG), desc(TRBPG), desc(EFG), desc(ASTPG)) %>% 
+  head(5)
+```
+```{r}
+# Ranking for Power Forward
+rank_data %>% 
+  filter(Pos == "PF") %>% 
+  arrange(desc(PTSPG), desc(TRBPG), desc(EFG), desc(ASTPG)) %>% 
+  head(5)
+```
+```{r}
+# Ranking for Small Forward
+rank_data %>% 
+  filter(Pos == "SF") %>% 
+  arrange(desc(PTSPG), desc(EFG), desc(ASTPG), desc(TRBPG)) %>% 
+  head(5)
+```
+```{r}
+# Ranking for Shooting Guard
+rank_data %>% 
+  filter(Pos == "SG") %>% 
+  arrange(desc(PTSPG), desc(EFG), desc(ASTPG), desc(TRBPG)) %>% 
+  head(5)
+```
+```{r}
+# Ranking for Point Guard
+rank_data %>% 
+  filter(Pos == "PG") %>% 
+  arrange(desc(ASTPG), desc(PTSPG), desc(EFG), desc(TRBPG)) %>% 
+  head(5)
+```
+The budget is $118 million. And there should be budget saved for players other than the starting five. Base on the ranking above, the recommendation are:
+- Center: Joel Embiid ($25.5 mil)
+- Power Forward: Julius Randle ($8.6 mil)
+- Small Forward: Khris Middleton ($13.0 mil)
+- Shooting Guard: Devin Booker ($3.3 mil)
+- Point Guard: John Wall ($19.2 mil)
+
+Total salary: `$69.6` million (`$48.4` mil for others)
+
 
 # Summary
+  It is complicated to identify best players for the team by simple stats. One can achieve impressive stats while the team is not winning. The chemistry between teammates, the strategy of the head coach, even  the performance that stats can not demonstrate are all very important.
+  In the final recommendation, for each position, the priorities are different. For center and power forward, the importance of rebounds are much significant. For the small forward and shooting guard, the scoring and its efficiency are more important. For point guard, the ability to connect teammates is essential so assist is the priority.
+  In this project, the tasks is to find best player for the team. So the analysis tries to find the most important stats for the wins, and then find the players that can contribute to those stats under the budget.
 
 # Reference
+```{r include=FALSE}
+citation("tidyverse")
+citation("ggplot2")
+citation("broom")
+citation("car")
+```
+1. Wickham et al., (2019). Welcome to the tidyverse. Journal of Open
+  Source Software, 4(43), 1686, https://doi.org/10.21105/joss.01686
+2. H. Wickham. ggplot2: Elegant Graphics for Data Analysis.
+  Springer-Verlag New York, 2016.
+3. David Robinson, Alex Hayes and Simon Couch (2021). broom: Convert
+  Statistical Objects into Tidy Tibbles. R package version 0.7.9.
+  https://CRAN.R-project.org/package=broom
+4. John Fox and Sanford Weisberg (2019). An {R} Companion to Applied
+  Regression, Third Edition. Thousand Oaks CA: Sage. URL:
+  https://socialsciences.mcmaster.ca/jfox/Books/Companion/
