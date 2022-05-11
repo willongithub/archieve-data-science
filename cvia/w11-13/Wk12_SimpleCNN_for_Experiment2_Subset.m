@@ -5,10 +5,9 @@ close all;
 clear all;
 clc;
 
-%% Read the training, validation and test partitions from the relevant
-%  text files. 
+%% Read the training, validation and test partitions from the relevant text files. 
 %  *** Adjust the file path as required. ***
-folder = "P:\CUB_200_2011_Subset20classes\";
+folder = "..\assets\";
 trainingImageNames = readtable(fullfile(folder, "train.txt"), ... 
     'ReadVariableNames', false);
 trainingImageNames.Properties.VariableNames = {'index', 'imageName'};
@@ -22,11 +21,11 @@ testImageNames = readtable(folder + "test.txt", ...
 testImageNames.Properties.VariableNames = {'index', 'imageName'};
 
 %% Read class info from the relevant text files
-classNames = readtable(folder + "classes.txt", ...
+classNames = readtable(folder + "CUB_200_2011_Subset20classes\classes.txt", ...
     'ReadVariableNames', false);
 classNames.Properties.VariableNames = {'index', 'className'};
 
-imageClassLabels = readtable(folder + "image_class_labels.txt", ...
+imageClassLabels = readtable(folder + "CUB_200_2011_Subset20classes\image_class_labels.txt", ...
     'ReadVariableNames', false);
 imageClassLabels.Properties.VariableNames = {'index', 'classLabel'};
 
@@ -35,19 +34,19 @@ imageClassLabels.Properties.VariableNames = {'index', 'classLabel'};
 %  path and file names for each data partition.
 trainingImageList = strings(height(trainingImageNames), 1);
 for iI = 1:height(trainingImageNames)
-    trainingImageList(iI) = string(fullfile(folder, "images/", ...
+    trainingImageList(iI) = string(fullfile(folder, "CUB_200_2011_Subset20classes\images\", ...
         string(cell2mat(trainingImageNames.imageName(iI)))));
 end
 
 validationImageList = strings(height(validationImageNames), 1);
 for iI = 1:height(validationImageNames)
-    validationImageList(iI) = string(folder + "images/" + ...
+    validationImageList(iI) = string(folder + "CUB_200_2011_Subset20classes\images\" + ...
         string(cell2mat(validationImageNames.imageName(iI))));
 end
 
 testImageList = strings(height(testImageNames), 1);
 for iI = 1:height(testImageNames)
-    testImageList(iI) = string(folder + "images/" + ...
+    testImageList(iI) = string(folder + "CUB_200_2011_Subset20classes\images\" + ...
         string(cell2mat(testImageNames.imageName(iI))));
 end
 
