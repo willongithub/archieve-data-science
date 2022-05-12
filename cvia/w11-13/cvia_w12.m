@@ -45,22 +45,22 @@ testImageDS = imageDatastore(fullfile("..\assets\CUB_200_2011_Subset20classes\",
 testLabels = arrayDatastore(testImageDS.Labels);
 
 %% Transform the Image into Target Size
-targetSize = [280, 280];  
+targetSize = [224, 224];  
 
 % training set
-trainingImageDS = transform(trainingImageDS, ... 
+trainingResizedDS = transform(trainingImageDS, ... 
     @(x) imresize(x, targetSize)); 
-trainingCDS = combine(trainingImageDS, trainingLabels);
+trainingCDS = combine(trainingResizedDS, trainingLabels);
 
 % validation set
-validationImageDS = transform(validationImageDS, ... 
+validationResizedDS = transform(validationImageDS, ... 
     @(x) imresize(x, targetSize)); 
-validationCDS = combine(validationImageDS, validationLabels);
+validationCDS = combine(validationResizedDS, validationLabels);
 
 % test set 
-testImageDS = transform(testImageDS, ... 
+testResizedDS = transform(testImageDS, ... 
     @(x) imresize(x, targetSize));
-testCDS = combine(testImageDS, testLabels);
+testCDS = combine(testResizedDS, testLabels);
 
 %% Display a Sample Image
 figure(1);
@@ -70,21 +70,21 @@ title("Resized Sample Image")
 %% Build Simple CNN Classifier
 % network architecture
 layers = [
-    imageInputLayer([280 280 3])
+    imageInputLayer([224 224 3])
     
-    convolution2dLayer(3,8,'Padding','same')
+    convolution2dLayer(3, 8, 'Padding','same')
+    batchNormalizationLayer
+    reluLayer
+    
+    maxPooling2dLayer(2, 'Stride', 2)
+    
+    convolution2dLayer(3, 16, 'Padding', 'same')
     batchNormalizationLayer
     reluLayer
     
     maxPooling2dLayer(2,'Stride',2)
     
-    convolution2dLayer(3,16,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
-    
-    maxPooling2dLayer(2,'Stride',2)
-    
-    convolution2dLayer(3,32,'Padding','same')
+    convolution2dLayer(3, 32, 'Padding', 'same')
     batchNormalizationLayer
     reluLayer
     
@@ -99,14 +99,14 @@ reset(device);  % Clear previous values that might still be on the GPU
 
 % training options
 options = trainingOptions('sgdm', ...
-    'InitialLearnRate',0.001, ...
+    'InitialLearnRate', 0.001, ...
     'MiniBatchSize', 20, ...
-    'MaxEpochs',10, ...
-    'Shuffle','every-epoch', ...
-    'ValidationData',validationCDS, ...
+    'MaxEpochs', 10, ...
+    'Shuffle', 'every-epoch', ...
+    'ValidationData', validationCDS, ...
     'VerboseFrequency', 1, ...
-    'Verbose',true, ...
-    'Plots','training-progress');
+    'Verbose', true, ...
+    'Plots', 'training-progress');
 
 %% Train the Network
 net = trainNetwork(trainingCDS, layers, options);
