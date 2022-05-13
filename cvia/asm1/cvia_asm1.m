@@ -21,21 +21,56 @@ boundingBoxes = readtable(path + "bounding_boxes.txt", ...
 boundingBoxes.Properties.VariableNames = {'index', 'x', 'y', 'w', 'h'};
 
 % Read image file paths
-path_all = readtable(fullfile(path, "images.txt"), ...  
+imageFiles = readtable(fullfile(path, "images.txt"), ...  
     "ReadVariableNames", false); 
-path_all.Properties.VariableNames = ["index", "image_path"];
+imageFiles.Properties.VariableNames = ["index", "file"];
+
+% Combine image and bounding box info
+dataFiles = join(imageFiles, boundingBoxes);
 
 % Split dataset
-data_size = height(path_all);
+dataSize = height(dataFiles);
 
 rng default;  % for reproducibility
-index_all = randperm(data_size);  % shuffled index number
+indexAll = randperm(dataSize);  % shuffled index number
 
-index_train = index_all(1:floor(data_size*0.6));
-index_validate = index_all(floor(data_size*0.6) + 1:floor(data_size*0.8));
-index_test = index_all(floor(data_size*0.8) + 1:end);
+indexTrain = indexAll(1:floor(dataSize*0.6));
+indexValidate = indexAll(floor(dataSize*0.6) + 1:floor(dataSize*0.8));
+indexTest = indexAll(floor(dataSize*0.8) + 1:end);
 
-% 
+% Create datastores
+trainingDS = imageDatastore(fullfile(path, "images", ... 
+    dataFiles(indexTrain, :).file), "labelSource", "foldernames", ... 
+    "FileExtensions", ".jpg"); 
+
+validationDS = imageDatastore(fullfile(path, "images", ... 
+    dataFiles(indexValidate, :).file), "labelSource", "foldernames", ... 
+    "FileExtensions", ".jpg"); 
+
+testDS = imageDatastore(fullfile(path, "images", ... 
+    dataFiles(indexTest, :).file), "labelSource", "foldernames", ... 
+    "FileExtensions", ".jpg"); 
+
+% Resize and crop
+% targetSize = [256, 256];
+targetSize = [128, 128];
+
+% training set
+trainingCDS = transform(trainingCDS, ... 
+    @(x) preprocessData(x, targetSize)); 
+
+% validation set
+validationCDS = transform(validationCDS, ... 
+    @(x) preprocessData(x, targetSize)); 
+
+% test set 
+testCDS = transform(testCDS, ... 
+    @(x) preprocessData(x, targetSize));
+
+% Combine datastores and labels
+trainingCDS = combine(trainingImageDS, trainingLabels);
+validationCDS = combine(validationImageDS, validationLabels);
+testCDS = combine(testImageDS, testLabels);
 
 %% Task 1: Classic Machine Learning Approach
 
