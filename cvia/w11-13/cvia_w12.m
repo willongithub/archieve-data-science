@@ -30,22 +30,25 @@ imageClassLabels.Properties.VariableNames = ["index", "classLabel"];
 trainingImageDS = imageDatastore(fullfile("..\assets\CUB_200_2011_Subset20classes\", "images", ... 
     trainingImageNames.imageName), "labelSource", "foldernames", ... 
     "FileExtensions", ".jpg"); 
+trainingImageDS.ReadFcn = @readImagesIntoDatastore;
 trainingLabels = arrayDatastore(trainingImageDS.Labels);
 
 % validation set
 validationImageDS = imageDatastore(fullfile("..\assets\CUB_200_2011_Subset20classes\", "images", ... 
     validationImageNames.imageName), "labelSource", "foldernames", ... 
     "FileExtensions", ".jpg"); 
+validationImageDS.ReadFcn = @readImagesIntoDatastore;
 validationLabels = arrayDatastore(validationImageDS.Labels);
 
 % test set
 testImageDS = imageDatastore(fullfile("..\assets\CUB_200_2011_Subset20classes\", "images", ... 
     testImageNames.imageName), "labelSource", "foldernames", ... 
     "FileExtensions", ".jpg"); 
+testImageDS.ReadFcn = @readImagesIntoDatastore;
 testLabels = arrayDatastore(testImageDS.Labels);
 
 %% Transform the Image into Target Size
-targetSize = [224, 224];  
+targetSize = [280, 280];  
 
 % training set
 trainingResizedDS = transform(trainingImageDS, ... 
@@ -70,7 +73,7 @@ title("Resized Sample Image")
 %% Build Simple CNN Classifier
 % network architecture
 layers = [
-    imageInputLayer([224 224 3])
+    imageInputLayer([280 280 3])
     
     convolution2dLayer(3, 8, 'Padding','same')
     batchNormalizationLayer
