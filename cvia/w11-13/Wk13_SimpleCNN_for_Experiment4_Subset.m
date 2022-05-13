@@ -9,7 +9,7 @@ clc;
 %% Read the training, validation and test partitions from the relevant
 %  text files. 
 %  *** Adjust the file path as required. ***
-folder = "P:\CUB_200_2011_Subset20classes\";
+folder = "..\assets\CUB_200_2011_Subset20classes\";
 trainingImageNames = readtable(fullfile(folder, "train.txt"), ... 
     'ReadVariableNames', false);
 trainingImageNames.Properties.VariableNames = {'index', 'imageName'};
