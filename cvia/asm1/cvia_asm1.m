@@ -10,7 +10,9 @@ tic
 %% Dataset Preparation
 % Set path for dataset folder
 % path = "assets\CUB_200_2011\";
+% nClass = 200;
 path = "..\assets\CUB_200_2011_Subset20classes\";  % for debuging
+nClass = 20;
 
 % Show DL trainging info
 verbose = false;
