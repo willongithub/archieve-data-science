@@ -11,3 +11,5 @@ This is an archive for my data science study.
 > is not a bad name for this repo after all.
 
 `Hello World of Data Science!`
+
+> __Chao!!__
